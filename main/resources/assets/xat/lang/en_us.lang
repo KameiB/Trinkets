@@ -277,7 +277,7 @@ item.dragons_eye.0.treasurefinder.off=I think my Treasury is sufficiently full $
 item.dragons_eye.0.compat.tan=$typeimmune:
 item.dragons_eye.0.heatimmune=§6Immunity to hyperthermia
 item.dragons_eye.0.coldimmune=§6Immunity to hypothermia
-item.dragons_eye.0.paralysisimmune=§6Immunity to hypothermia
+item.dragons_eye.0.paralysisimmune=§6Immunity to paralysis
 item.dragons_eye.0.compat.enhancedvisuals=
 item.dragons_eye.0.compat.iaf.ice.frostwalker=§6Grants §3Frost Walker
 
