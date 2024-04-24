@@ -616,8 +616,10 @@ xat.config.server.dragons_eye.iceandfire.ice.variant=Ice Variant
 xat.config.server.dragons_eye.iceandfire.ice.variant.tooltip=Should there be an Ice Variant of the Dragons eye
 xat.config.server.dragons_eye.iceandfire.ice.frostwalker=Frost Walker
 xat.config.server.dragons_eye.iceandfire.ice.frostwalker.tooltip=Should the Ice Variant have Frost Walker
-xat.config.server.dragons_eye.iceandfire.lightning.paralysis.variant=Paralysis Immunity
-xat.config.server.dragons_eye.iceandfire.lightning.paralysis.tooltip=Should the Ice Variant have Paralysis Immunity
+xat.config.server.dragons_eye.iceandfire.lightning.variant=Lightning Variant
+xat.config.server.dragons_eye.iceandfire.lightning.variant.tooltip=Should there be a Lightning Variant of the Dragons eye
+xat.config.server.dragons_eye.iceandfire.lightning.paralysis=Paralysis Immunity
+xat.config.server.dragons_eye.iceandfire.lightning.paralysis.tooltip=Should the Lightning Variant have Paralysis Immunity
 
 xat.config.client.dragons_eye.growl.enabled=Dragon's Growl
 xat.config.client.dragons_eye.growl.enabled.tooltip=When The Treasure Finder is Enabled, Should There be a Growl the Treasure Finder Pings Treasure
