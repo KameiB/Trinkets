@@ -56,8 +56,11 @@ public class CapabilitiesHandler {
 					event.addCapability(new ResourceLocation(Reference.MODID, "Race"), new CapabilityProviderBase<>(Capabilities.ENTITY_PROPERTIES, new EntityProperties((EntityLivingBase) entity)));
 				}
 			}
-			if (!entity.hasCapability(Capabilities.ENTITY_MAGIC, null)) {
-				event.addCapability(new ResourceLocation(Reference.MODID, "MagicStats"), new CapabilityProviderBase<>(Capabilities.ENTITY_MAGIC, new MagicStats((EntityLivingBase) entity)));
+			final boolean player_only = TrinketsConfig.SERVER.mana.players_only;
+			if (!player_only || (player_only && isPlayer)) {
+				if (!entity.hasCapability(Capabilities.ENTITY_MAGIC, null)) {
+					event.addCapability(new ResourceLocation(Reference.MODID, "MagicStats"), new CapabilityProviderBase<>(Capabilities.ENTITY_MAGIC, new MagicStats((EntityLivingBase) entity)));
+				}
 			}
 		}
 	}

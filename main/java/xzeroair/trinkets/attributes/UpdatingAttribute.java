@@ -1,5 +1,6 @@
 package xzeroair.trinkets.attributes;
 
+import java.util.Collections;
 import java.util.UUID;
 
 import net.minecraft.entity.EntityLivingBase;
@@ -7,7 +8,9 @@ import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.ai.attributes.AttributeModifier;
 import net.minecraft.entity.ai.attributes.IAttribute;
 import net.minecraft.entity.ai.attributes.IAttributeInstance;
+import net.minecraft.network.play.server.SPacketEntityProperties;
 import net.minecraft.world.World;
+import net.minecraft.world.WorldServer;
 import xzeroair.trinkets.util.Reference;
 import xzeroair.trinkets.util.compat.firstaid.FirstAidCompat;
 
@@ -76,7 +79,7 @@ public class UpdatingAttribute {
 		if ((entity == null) || (world == null)) {
 			return;
 		}
-		final IAttributeInstance AttributeInstance = entity.getAttributeMap().getAttributeInstanceByName(attribute);//.getAttributeMap().getAttributeInstance(attrib);
+		final IAttributeInstance AttributeInstance = entity.getAttributeMap().getAttributeInstanceByName(attribute);
 		if ((AttributeInstance == null) || (uuid.compareTo(UUID.fromString("00000000-0000-0000-0000-000000000000")) == 0)) {
 			return;
 		}
@@ -100,15 +103,15 @@ public class UpdatingAttribute {
 					//					if (diff > 0) {
 					//						entity.heal(diff);
 					//					} else {
+					//					}
 
-					//					}
 					FirstAidCompat.rescale(entity);
-					//					if (!world.isRemote) {
-					//						if (world instanceof WorldServer) {
-					//							final SPacketEntityProperties packet = new SPacketEntityProperties(entity.getEntityId(), Collections.singleton(AttributeInstance));
-					//							((WorldServer) world).getEntityTracker().sendToTrackingAndSelf(entity, packet);
-					//						}
-					//					}
+					if (!world.isRemote) {
+						if (world instanceof WorldServer) {
+							final SPacketEntityProperties packet = new SPacketEntityProperties(entity.getEntityId(), Collections.singleton(AttributeInstance));
+							((WorldServer) world).getEntityTracker().sendToTrackingAndSelf(entity, packet);
+						}
+					}
 				} else {
 					AttributeInstance.applyModifier(this.createModifier(amount, operation));
 				}
@@ -122,23 +125,15 @@ public class UpdatingAttribute {
 		if (((entity == null) || (world == null))) {
 			return;
 		}
-		final IAttributeInstance AttributeInstance = entity.getAttributeMap().getAttributeInstanceByName(attribute);//.getAttributeMap().getAttributeInstance(attrib);
+		final IAttributeInstance AttributeInstance = entity.getAttributeMap().getAttributeInstanceByName(attribute);
 		if ((AttributeInstance == null) || (AttributeInstance.getModifier(uuid) == null)) {
 			return;
 		}
-		//		if (AttributeInstance.getAttribute() == SharedMonsterAttributes.MAX_HEALTH) {
-		//			final float health = entity.getHealth();
-		//			AttributeInstance.removeModifier(uuid);
-		//			if (health > AttributeInstance.getAttributeValue()) {
-		//				entity.setHealth(entity.getMaxHealth());
-		//			}
-		//		} else {
 		if (AttributeInstance.getAttribute() == JumpAttribute.stepHeight) {
 			if (entity.stepHeight != AttributeInstance.getBaseValue()) {
 				entity.stepHeight = (float) AttributeInstance.getBaseValue();
 			}
 		}
 		AttributeInstance.removeModifier(uuid);
-		//		}
 	}
 }

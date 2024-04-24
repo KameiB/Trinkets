@@ -107,7 +107,10 @@ public class TrinketEnderTiara extends AccessoryBase {
 	@SideOnly(Side.CLIENT)
 	@Override
 	public ModelBiped getArmorModel(EntityLivingBase entityLiving, ItemStack itemStack, EntityEquipmentSlot armorSlot, ModelBiped _default) {
-		if (!itemStack.isEmpty()) {
+		if (clientConfig.doRender && clientConfig.doRenderHelmet && !itemStack.isEmpty()) {
+			if (tiara == null) {
+				tiara = new BipedJsonModel(new ResourceLocation(this.getRegistryName().toString() + "_model"));
+			}
 			BipedJsonModel model = tiara;
 			model.tranformType = ItemCameraTransforms.TransformType.HEAD;
 			model.equippedAsAccessory = false;

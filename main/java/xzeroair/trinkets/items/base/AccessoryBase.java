@@ -50,6 +50,8 @@ import xzeroair.trinkets.util.interfaces.IsModelLoaded;
 public abstract class AccessoryBase extends Item implements IsModelLoaded, IAccessoryInterface, ItemAbilityProvider, IElementProvider {
 
 	protected UUID uuid;
+	@Deprecated
+	protected String[] attributes;
 
 	public AccessoryBase(String name) {
 		this.setTranslationKey(name);
@@ -60,10 +62,14 @@ public abstract class AccessoryBase extends Item implements IsModelLoaded, IAcce
 
 	@Deprecated
 	public AccessoryBase setAttributeConfig(String[] attributeConfig) {
+		attributes = attributeConfig;
 		return this;
 	}
 
 	public String[] getAttributeConfig() {
+		if (attributes != null) {
+			return attributes;
+		}
 		return new String[0];
 	}
 	//	@Override
@@ -321,13 +327,14 @@ public abstract class AccessoryBase extends Item implements IsModelLoaded, IAcce
 	@Override
 	public Element getPrimaryElement(ItemStack stack) {
 		return Capabilities.getTrinketProperties(stack, this.getPrimaryElement(), (prop, element) -> {
-			if (prop.getVariant() == 1) {
-				prop.getElementAttributes().setPrimaryElement(Elements.ICE);
-			} else if (prop.getVariant() == 2) {
-				prop.getElementAttributes().setPrimaryElement(Elements.LIGHTNING);
-			} else {
-				prop.getElementAttributes().setPrimaryElement(Elements.FIRE);
-			}
+			//			Element e = Element.getByNameOrId(prop.getVariant() + "");
+			//			if (prop.getVariant() == 1) {
+			//				prop.getElementAttributes().setPrimaryElement(Elements.ICE);
+			//			} else if (prop.getVariant() == 2) {
+			//				prop.getElementAttributes().setPrimaryElement(Elements.LIGHTNING);
+			//			} else {
+			//				prop.getElementAttributes().setPrimaryElement(Elements.FIRE);
+			//			}
 			Element primary = prop.getElementAttributes().getPrimaryElement();
 			if (primary != Elements.NEUTRAL) {
 				return primary;
@@ -470,6 +477,11 @@ public abstract class AccessoryBase extends Item implements IsModelLoaded, IAcce
 			}
 		} catch (Exception e) {
 		}
+
+		//		try {
+		//			tooltip.add(this.getPrimaryElement(stack).getName() + "");
+		//		} catch (Exception e) {
+		//		}
 	}
 
 	/*

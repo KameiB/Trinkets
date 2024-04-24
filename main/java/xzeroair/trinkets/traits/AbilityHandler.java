@@ -17,7 +17,6 @@ import xzeroair.trinkets.Trinkets;
 import xzeroair.trinkets.api.TrinketHelper.SlotInformation;
 import xzeroair.trinkets.api.TrinketHelper.SlotInformation.ItemHandlerType;
 import xzeroair.trinkets.capabilities.Capabilities;
-import xzeroair.trinkets.init.EntityRaces;
 import xzeroair.trinkets.races.EntityRace;
 import xzeroair.trinkets.traits.abilities.interfaces.IAbilityInterface;
 import xzeroair.trinkets.traits.abilities.interfaces.IContainerAbility;
@@ -226,11 +225,18 @@ public class AbilityHandler {
 		case OTHER:
 			return false;
 		case RACE:
-			EntityRace race = Capabilities.getEntityProperties(entity, EntityRaces.none, (prop, rtn) -> prop.getCurrentRace());
-			if (!race.isNone() && race.getRegistryName().toString().contentEquals(source)) {
-				return false;
+			return Capabilities.getEntityProperties(entity, true, (prop, rtn) -> {
+				EntityRace race = prop.getCurrentRace();
+				if (!race.isNone() && race.getRegistryName().toString().contentEquals(source)) {
+					//					prop.getRaceHandler().getElementalProperties();
+					//									if() {
+
+					//									}
+					return false;
+				}
+				return rtn;
 			}
-			return true;
+			);
 		//		case TRINKETS:
 		//			final ITrinketContainerHandler TrinketHandler = getTrinketHandler(entity);
 		//			return TrinketHandler != null ? getTrinketHandler(entity).getStackInSlot(this.getSlot()) : ItemStack.EMPTY;
@@ -280,10 +286,11 @@ public class AbilityHandler {
 
 	public NBTTagCompound saveAbilityToNBT(IAbilityInterface ability, NBTTagCompound compound) {
 		String key = ability.getRegistryName().toString();
-		if (!compound.hasKey(key)) {
-			compound.setTag(key, new NBTTagCompound());
+		final NBTTagCompound tag = new NBTTagCompound();
+		ability.saveStorage(tag);
+		if (!tag.isEmpty()) {
+			compound.setTag(key, tag);
 		}
-		ability.saveStorage(compound.getCompoundTag(key));
 		return compound;
 	}
 
@@ -295,19 +302,19 @@ public class AbilityHandler {
 	}
 
 	public NBTTagCompound saveAbilitiesToNBT(NBTTagCompound compound) {
-		if (!compound.hasKey("Abilities")) {
-			compound.setTag("Abilities", new NBTTagCompound());
-		}
-		NBTTagCompound abilityNBT = compound.getCompoundTag("Abilities");
+		final NBTTagCompound tag = new NBTTagCompound();
 		for (Entry<String, AbilityHolder> entry : active.entrySet()) {
 			String key = entry.getKey();
 			AbilityHolder value = entry.getValue();
 			try {
-				this.saveAbilityToNBT(value.getAbility(), abilityNBT);
+				this.saveAbilityToNBT(value.getAbility(), tag);
 			} catch (final Exception e) {
 				Trinkets.log.error("Error when saving ability:" + key);
 				e.printStackTrace();
 			}
+		}
+		if (!tag.isEmpty()) {
+			compound.setTag("Abilities", tag);
 		}
 		return compound;
 	}

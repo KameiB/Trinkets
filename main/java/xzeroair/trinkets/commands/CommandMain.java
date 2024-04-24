@@ -49,7 +49,7 @@ public class CommandMain extends CommandBase {
 
 	@Override
 	public int getRequiredPermissionLevel() {
-		return 0;
+		return 4;
 	}
 
 	@Override
@@ -66,14 +66,16 @@ public class CommandMain extends CommandBase {
 				switch (args[2].toLowerCase(Locale.ENGLISH)) {
 				case "set":
 					return getListOfStringsMatchingLastWord(args, "0", "100", "200", "300");
+				case "resetBonus":
+					return Collections.<String>emptyList();
 				default:
 					return Collections.<String>emptyList();
 				}
 			case "race":
 				switch (args[2].toLowerCase(Locale.ENGLISH)) {
-				case "clearRace":
+				case "reset":
 					return Collections.<String>emptyList();
-				case "clearFoodRace":
+				case "resetImbued":
 					return Collections.<String>emptyList();
 				default:
 					return getListOfStringsMatchingLastWord(args, EntityRace.Registry.getKeys());
@@ -84,9 +86,9 @@ public class CommandMain extends CommandBase {
 		} else if (length == 3) {
 			switch (args[1].toLowerCase(Locale.ENGLISH)) {
 			case "mana":
-				return getListOfStringsMatchingLastWord(args, "refill", "set");
+				return getListOfStringsMatchingLastWord(args, "refill", "set", "resetBonus");
 			case "race":
-				return getListOfStringsMatchingLastWord(args, "setRace", "setFoodRace", "clearRace", "clearFoodRace");
+				return getListOfStringsMatchingLastWord(args, "setRace", "setImbuedRace", "reset", "resetImbued");
 			default:
 				return Collections.<String>emptyList();
 			}
@@ -139,7 +141,7 @@ public class CommandMain extends CommandBase {
 			return;
 
 		default:
-			this.message(sender, "/xat help <command> \n(Replace <command> with a simpledifficulty command name)");
+			this.message(sender, "/xat help <command> \n(Replace <command> with a command name)");
 			return;
 		}
 	}
@@ -158,6 +160,9 @@ public class CommandMain extends CommandBase {
 						if (args.length > 3) {
 							capability.setMana(Float.parseFloat(args[3]));
 						}
+						break;
+					case "resetbonus":
+						capability.setBonusMana(0);
 						break;
 					default:
 						break;
@@ -197,15 +202,15 @@ public class CommandMain extends CommandBase {
 								capability.setOriginalRace(r);
 							}
 							break;
-						case "setfoodrace":
+						case "setimbuedrace":
 							if (r != null) {
 								capability.setImbuedRace(r);
 							}
 							break;
-						case "clearrace":
+						case "reset":
 							capability.setOriginalRace(EntityRaces.none);
 							break;
-						case "clearfoodrace":
+						case "resetimbued":
 							capability.setImbuedRace(EntityRaces.none);
 							break;
 						default:

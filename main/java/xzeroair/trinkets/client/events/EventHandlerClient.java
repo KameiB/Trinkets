@@ -2,10 +2,10 @@ package xzeroair.trinkets.client.events;
 
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.TreeMap;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
+import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.settings.GameSettings;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.entity.Entity;
@@ -17,6 +17,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.potion.PotionType;
 import net.minecraft.potion.PotionUtils;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.fml.client.FMLClientHandler;
@@ -53,15 +54,6 @@ import xzeroair.trinkets.util.helpers.TranslationHelper.OptionEntry;
 
 @SideOnly(Side.CLIENT)
 public class EventHandlerClient {
-
-	private final String[] keys = {
-			"Left",
-			"Right",
-			"Forward",
-			"Backward",
-			"Jump",
-			"Sneak"
-	};
 
 	//	@SubscribeEvent
 	//	public void mouseEvent(MouseEvent event) {
@@ -223,10 +215,11 @@ public class EventHandlerClient {
 	@SubscribeEvent
 	public void ItemToolTipEvent(ItemTooltipEvent event) {
 		final EntityPlayer player = event.getEntityPlayer();
-		if ((event.getEntityPlayer() == null)) {
+		if ((player == null) || (player.getEntityWorld() == null)) {
 			return;
 		}
-		if (player.getEntityWorld() == null) {
+		final GuiScreen screen = Minecraft.getMinecraft().currentScreen;
+		if ((screen == null) || screen.doesGuiPauseGame()) {
 			return;
 		}
 		final ItemStack stack = event.getItemStack();
@@ -239,21 +232,83 @@ public class EventHandlerClient {
 				event.getToolTip().add(OreDictionary.getOreName(or));
 			}
 		}
-		if (stack.getItem() instanceof ItemArmor) {
-			final ItemArmor armor = ((ItemArmor) stack.getItem());
-			if (TrinketsConfig.CLIENT.debug.debugArmorMaterials) {
-				event.getToolTip().add(armor.getArmorMaterial().toString());
-			}
-			if (TrinketsConfig.SERVER.races.faelis.penalties) {
-				boolean isFaelis = Capabilities.getEntityProperties(player, false, (prop, rtn) -> prop.getCurrentRace().equals(EntityRaces.faelis));
-				if (isFaelis) {
-					TreeMap<String, ArmorEntry> ArmorWeightValues = ConfigHelper.TrinketConfigStorage.ArmorWeightValues;
-					for (ArmorEntry entry : ArmorWeightValues.values()) {
-						if (entry.doesItemMatchEntry(stack)) {
-							if (entry.getWeight() != 0) {
-								String color = entry.getWeight() > 0 ? "" + TextFormatting.RED : "" + TextFormatting.BLUE;
-								event.getToolTip().add("Weight: " + color + entry.getWeight());
-								break;
+		if (TrinketsConfig.CLIENT.debug.debugArmorMaterials || TrinketsConfig.SERVER.races.faelis.penalties) {
+			final String itemType = ConfigHelper.ArmorEntry.getItemType(stack);
+			if (!itemType.isEmpty()) {
+				final String ItemMaterial = ConfigHelper.ArmorEntry.getItemMaterial(stack).toLowerCase();
+				if (TrinketsConfig.CLIENT.debug.debugArmorMaterials && !ItemMaterial.isEmpty()) {
+					event.getToolTip().add(ItemMaterial);
+				}
+				if (TrinketsConfig.SERVER.races.faelis.penalties) {
+					boolean isFaelis = Capabilities.getEntityProperties(player, false, (prop, rtn) -> prop.getCurrentRace().equals(EntityRaces.faelis));
+					if (isFaelis) {
+						ArmorEntry entry = null;
+						if (item instanceof ItemArmor) {
+							final ItemArmor armor = ((ItemArmor) item);
+							final String armorType = armor.armorType.getName();
+							entry = ConfigHelper.TrinketConfigStorage.getEquipmentEntry(
+									regName + ":" + armorType,
+									regName,
+									"ObjectMaterial:" + ItemMaterial + ":" + armorType,
+									"ObjectMaterial:" + ItemMaterial
+							);
+							if (entry != null) {
+								String color = entry.getEquipmentWeight() > 0 ? "" + TextFormatting.RED : "" + TextFormatting.BLUE;
+								//								event.getToolTip().add("Weight: " + color + entry.getEquipmentWeight());
+								event.getToolTip().add(new TextComponentTranslation("xat.tooltip.weight").getFormattedText() + " " + color + entry.getEquipmentWeight());
+							}
+							//						} else if (item instanceof ItemShield) {
+						} else {
+							String[] mS = new String[] {
+									regName + ":" + "mainhand",
+									regName,
+									"ObjectMaterial:" + ItemMaterial + ":" + "mainhand" + ":" + itemType,
+									"ObjectMaterial:" + ItemMaterial + ":" + "mainhand" + ":" + "tool",
+									"ObjectMaterial:" + ItemMaterial + ":" + "hand" + ":" + itemType,
+									"ObjectMaterial:" + ItemMaterial + ":" + "hand" + ":" + "tool",
+									"ObjectMaterial:" + ItemMaterial + ":" + itemType,
+									"ObjectMaterial:" + ItemMaterial + ":" + "tool",
+									"ObjectMaterial:" + ItemMaterial + ":" + "mainhand",
+									"ObjectMaterial:" + ItemMaterial + ":" + "hand",
+									"ObjectMaterial:" + ItemMaterial,
+							};
+							final ArmorEntry main = ConfigHelper.TrinketConfigStorage.getEquipmentEntry(
+									(k, v) -> v.doesItemMatchEntry(stack), mS
+							);
+							String[] oS = new String[] {
+									regName + ":" + "offhand",
+									regName,
+									"ObjectMaterial:" + ItemMaterial + ":" + "offhand" + ":" + itemType,
+									"ObjectMaterial:" + ItemMaterial + ":" + "offhand" + ":" + "tool",
+									"ObjectMaterial:" + ItemMaterial + ":" + "hand" + ":" + itemType,
+									"ObjectMaterial:" + ItemMaterial + ":" + "hand" + ":" + "tool",
+									"ObjectMaterial:" + ItemMaterial + ":" + itemType,
+									"ObjectMaterial:" + ItemMaterial + ":" + "tool",
+									"ObjectMaterial:" + ItemMaterial + ":" + "offhand",
+									"ObjectMaterial:" + ItemMaterial + ":" + "hand",
+									"ObjectMaterial:" + ItemMaterial
+							};
+							final ArmorEntry off = ConfigHelper.TrinketConfigStorage.getEquipmentEntry(
+									(k, v) -> v.doesItemMatchEntry(stack), oS
+							);
+							double mW = main == null ? 0 : main.getEquipmentWeight();
+							String color1 = mW > 0 ? "" + TextFormatting.RED : "" + TextFormatting.BLUE;
+							double oW = off == null ? 0 : off.getEquipmentWeight();
+							String color2 = oW > 0 ? "" + TextFormatting.RED : "" + TextFormatting.BLUE;
+
+							if ((mW != 0) || (oW != 0)) {
+								if (mW != oW) {
+									if (mW != 0) {
+										event.getToolTip().add("Weight: " + color1 + mW + " - Mainhand");
+										if (oW != 0) {
+											event.getToolTip().add("Weight: " + color2 + oW + " - Offhand");
+										}
+									} else {
+										event.getToolTip().add("Weight: " + color2 + oW + " - Offhand");
+									}
+								} else {
+									event.getToolTip().add("Weight: " + color1 + mW);
+								}
 							}
 						}
 					}
@@ -262,7 +317,7 @@ public class EventHandlerClient {
 		}
 		if (TrinketsConfig.SERVER.mana.mana_enabled) {
 			try {
-				final TreeMap<String, MPRecoveryItem> MagicRecoveryItems = ConfigHelper.TrinketConfigStorage.MagicRecoveryItems;
+				final Map<String, MPRecoveryItem> MagicRecoveryItems = ConfigHelper.TrinketConfigStorage.MagicRecoveryItems;
 				float amount = 0;
 				boolean multiplied = false;
 				for (MPRecoveryItem entry : MagicRecoveryItems.values()) {

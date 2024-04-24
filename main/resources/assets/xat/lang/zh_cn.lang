@@ -1,3 +1,4 @@
+## Translated by 502y
 itemGroup.trinketstab=Trinkets
 xat.config.title=Trinkets and Baubles
 
@@ -30,6 +31,9 @@ xat.tooltip.on=§r(§a打开§r)
 xat.tooltip.off=§r(§c关闭§r)
 xat.tooltip.enabled=§r[§a启用§r]
 xat.tooltip.disabled=§r[§c禁用§r]
+xat.tooltip.weight=Weight:
+
+xat..config.race.size=Size Settings
 
 key.xat.category=Trinkets and Baubles
 key.xat.trinket_target.desc=巨龙之眼：切换
@@ -278,7 +282,7 @@ item.dragons_eye.0.compat.tan=$typeimmune:
 item.dragons_eye.0.heatimmune=§6免疫炽热
 item.dragons_eye.0.coldimmune=§6免疫冻伤
 item.dragons_eye.0.paralysisimmune=§6免疫麻痹
-item.dragons_eye.0.compat.enhancedvisuals=
+
 item.dragons_eye.0.compat.iaf.ice.frostwalker=§6获得§3冰霜行者
 
 item.poison_stone.0.name=剧毒之石
@@ -614,6 +618,8 @@ xat.config.server.dragons_eye.iceandfire.ice.variant=Ice Variant
 xat.config.server.dragons_eye.iceandfire.ice.variant.tooltip=Should there be an Ice Variant of the Dragons eye
 xat.config.server.dragons_eye.iceandfire.ice.frostwalker=Frost Walker
 xat.config.server.dragons_eye.iceandfire.ice.frostwalker.tooltip=Should the Ice Variant have Frost Walker
+xat.config.server.dragons_eye.iceandfire.lightning.paralysis.variant=Paralysis Immunity
+xat.config.server.dragons_eye.iceandfire.lightning.paralysis.tooltip=Should the Ice Variant have Paralysis Immunity
 
 xat.config.client.dragons_eye.growl.enabled=Dragon's Growl
 xat.config.client.dragons_eye.growl.enabled.tooltip=When The Treasure Finder is Enabled, Should There be a Growl the Treasure Finder Pings Treasure
@@ -626,6 +632,9 @@ xat.config.client.dragons_eye.orefinder.refresh.rate.tooltip=Determines of Often
 
 xat.config.ender_tiara=Ender Queen's Crown Settings
 xat.config.ender_tiara.tooltip=
+
+xat.config.client.ender_tiara.helmet=Render helmet Slot
+xat.config.client.ender_tiara.helmet.tooltip=
 
 xat.config.server.ender_tiara.waterhurts=Water Hurts
 xat.config.server.ender_tiara.waterhurts.tooltip=If the Player Should Take Damage in water or when exposed to rain

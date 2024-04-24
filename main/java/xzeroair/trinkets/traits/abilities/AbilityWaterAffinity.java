@@ -39,15 +39,27 @@ public class AbilityWaterAffinity extends Ability implements ITickableAbility, I
 	@Override
 	public void tickAbility(EntityLivingBase entity) {
 		if (serverConfig.underwater_breathing) {
+			boolean hasWB = entity.isPotionActive(MobEffects.WATER_BREATHING);
+			int air = entity.getAir();
 			if (!serverConfig.always_full) {
-				if (entity.getAir() < 20) {
+				if (air < 20) {
 					entity.setAir(20);
 				}
+				if (Trinkets.BetterDiving) {
+					if (!hasWB || ((entity.ticksExisted % 199) == 0)) {
+						entity.addPotionEffect(new PotionEffect(MobEffects.WATER_BREATHING, 200, 0, false, false));
+					}
+				}
 			} else {
-				entity.setAir(300);
+				if (air < 300) {
+					entity.setAir(300);
+				}
+				if (!hasWB || ((entity.ticksExisted % 199) == 0)) {
+					entity.addPotionEffect(new PotionEffect(MobEffects.WATER_BREATHING, 200, 0, false, false));
+				}
 			}
-			if (Trinkets.BetterDiving) {
-				entity.addPotionEffect(new PotionEffect(MobEffects.WATER_BREATHING, 150, 0, false, false));
+			if (entity.getEntityWorld().isRemote && hasWB) {
+				entity.getActivePotionEffect(MobEffects.WATER_BREATHING).setPotionDurationMax(true);
 			}
 		}
 		if ((!Trinkets.BetterDiving) && (serverConfig.Swim_Tweaks == true) && !this.isSpectator(entity) && !this.isCreativeFlying(entity)) {

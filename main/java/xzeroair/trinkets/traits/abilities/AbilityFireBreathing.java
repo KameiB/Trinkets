@@ -27,6 +27,9 @@ public class AbilityFireBreathing extends Ability implements IKeyBindInterface {
 	}
 
 	protected boolean DragonBreath(Entity entity) {
+		if (this.isSpectator(entity)) {
+			return false;
+		}
 		if (breathStage > 3) {
 			breathStage = 0;
 		}
@@ -41,20 +44,12 @@ public class AbilityFireBreathing extends Ability implements IKeyBindInterface {
 			final World world = entity.getEntityWorld();
 			final float headPosX = (float) (entity.posX + (1.8F * 1 * 0.3F * Math.cos(((entity.rotationYaw + 90) * Math.PI) / 180)));
 			final float headPosZ = (float) (entity.posZ + (1.8F * 1 * 0.3F * Math.sin(((entity.rotationYaw + 90) * Math.PI) / 180)));
-			final float headPosY = (float) ((entity.posY + (entity.getEyeHeight() * 0.8)));// - 0.10000000149011612D);//(float) (entity.posY + (1.8F * 1 * 0.3F));
+			final float headPosY = (float) ((entity.posY + (entity.getEyeHeight() * 0.8)));
 			final double d2 = entity.getLookVec().x;
 			final double d3 = entity.getLookVec().y;
 			final double d4 = entity.getLookVec().z;
-			//			final double d2 = hitLoc.x - entity.posX;//entity.getLookVec().x;
-			//			final double d3 = hitLoc.y - entity.posY;//entity.getLookVec().y;
-			//			final double d4 = hitLoc.z - entity.posZ;//entity.getLookVec().z;
-			//			float inaccuracy = 0.25F;
-			//			d2 = d2 + (Reference.random.nextGaussian() * 0.007499999832361937D * inaccuracy);
-			//			d3 = d3 + (Reference.random.nextGaussian() * 0.007499999832361937D * inaccuracy);
-			//			d4 = d4 + (Reference.random.nextGaussian() * 0.007499999832361937D * inaccuracy);
 			world.playSound((EntityPlayer) null, entity.posX, entity.posY, entity.posZ, SoundEvents.ENTITY_ENDERDRAGON_SHOOT, SoundCategory.PLAYERS, 0.5F, 0.4F / ((Reference.random.nextFloat() * 0.4F) + 0.8F));
 			if (!world.isRemote) {
-				//			if (Trinkets.proxy.getSide() == Side.SERVER) {
 				//TODO Have a max life, tick it down, then kill the projectile, use the life to show decide on the look
 				final MovingThrownProjectile breath = new MovingThrownProjectile(
 						entity.getEntityWorld(), (EntityLivingBase) entity,
@@ -62,7 +57,7 @@ public class AbilityFireBreathing extends Ability implements IKeyBindInterface {
 						bcolor
 				);
 				breath.setPosition(headPosX, headPosY, headPosZ);
-				breath.shoot(entity, entity.rotationPitch, entity.rotationYaw, 0.0F, 1.5F, 1.0F);
+				breath.shoot(entity, entity.rotationPitch, entity.rotationYaw, 0.0F, 1.5F, 0.0F);
 				world.spawnEntity(breath.setColor(bcolor));
 			}
 		}

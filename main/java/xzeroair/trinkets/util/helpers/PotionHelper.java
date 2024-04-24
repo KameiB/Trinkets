@@ -89,7 +89,7 @@ public class PotionHelper {
 	public static Potion getModPotion(String modID, String potionEffect) {
 		if (Loader.isModLoaded(modID)) {
 			try {
-				return Potion.getPotionFromResourceLocation(potionEffect);
+				return Potion.getPotionFromResourceLocation(modID + ":" + potionEffect);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}

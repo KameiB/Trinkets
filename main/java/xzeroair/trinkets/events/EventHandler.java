@@ -2,7 +2,6 @@ package xzeroair.trinkets.events;
 
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.TreeMap;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
@@ -106,8 +105,10 @@ public class EventHandler extends EventBaseHandler {
 		if (!(entity instanceof EntityPlayer)) {
 			this.raceHandlerTick(entity);
 			this.effectHandlerTick(entity);
-			// TODO ADD MAGIC TO ENTITIES?
-			this.magicHandlerTick(entity);
+			if (!TrinketsConfig.SERVER.mana.players_only) {
+				// TODO ADD MAGIC TO ENTITIES?
+				this.magicHandlerTick(entity);
+			}
 		}
 	}
 
@@ -512,7 +513,7 @@ public class EventHandler extends EventBaseHandler {
 		);
 		if (TrinketsConfig.SERVER.mana.mana_enabled) {
 			try {
-				TreeMap<String, MPRecoveryItem> MagicRecoveryItems = ConfigHelper.TrinketConfigStorage.MagicRecoveryItems;
+				Map<String, MPRecoveryItem> MagicRecoveryItems = ConfigHelper.TrinketConfigStorage.MagicRecoveryItems;
 				float amount = 0;
 				boolean multiplied = false;
 				for (MPRecoveryItem entry : MagicRecoveryItems.values()) {

@@ -31,7 +31,7 @@ public class EmptyHandler extends EntityRacePropertiesHandler {
 
 	@Override
 	protected void initAttributes() {
-		final EntityRace previous = properties.getPreviousRace();
+		final EntityRace previous = this.getEntityProperties().getPreviousRace();
 		double d = Double.parseDouble(Reference.DECIMALFORMAT.format(1D - this.TransformationProgress()));
 		if (d != 0) {
 			String[] raceAttributes = previous.getRaceAttributes().getAttributes();
@@ -62,7 +62,7 @@ public class EmptyHandler extends EntityRacePropertiesHandler {
 				this.eyeHeightHandler();
 			} else {
 				if (firstTransformUpdate) {
-					final EntityRace previous = properties.getPreviousRace();
+					final EntityRace previous = this.getEntityProperties().getPreviousRace();
 					AttributeHelper.removeAttributesByUUID(entity, previous.getUUID());
 					((EntityPlayer) entity).eyeHeight = ((EntityPlayer) entity).getDefaultEyeHeight();
 					firstTransformUpdate = false;
@@ -74,8 +74,8 @@ public class EmptyHandler extends EntityRacePropertiesHandler {
 				this.eyeHeightHandler();
 			} else {
 				if (firstTransformUpdate) {
-					float height = properties.getDefaultHeight();
-					float width = properties.getDefaultWidth();
+					float height = this.getEntityProperties().getDefaultHeight();
+					float width = this.getEntityProperties().getDefaultWidth();
 					//					if (entity instanceof EntityAgeable) {
 					//						if (entity.isChild()) {
 					//							height *= 2;

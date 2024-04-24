@@ -22,14 +22,18 @@ import xzeroair.trinkets.client.keybinds.ModKeyBindings;
 import xzeroair.trinkets.init.Abilities;
 import xzeroair.trinkets.init.Elements;
 import xzeroair.trinkets.items.base.AccessoryBase;
-import xzeroair.trinkets.traits.abilities.*;
+import xzeroair.trinkets.traits.abilities.AbilityBlockFinder;
+import xzeroair.trinkets.traits.abilities.AbilityFireImmunity;
+import xzeroair.trinkets.traits.abilities.AbilityFrostWalker;
+import xzeroair.trinkets.traits.abilities.AbilityIceImmunity;
+import xzeroair.trinkets.traits.abilities.AbilityLightningImmunity;
+import xzeroair.trinkets.traits.abilities.AbilityNightVision;
 import xzeroair.trinkets.traits.abilities.compat.survival.AbilityColdImmunity;
 import xzeroair.trinkets.traits.abilities.compat.survival.AbilityHeatImmunity;
 import xzeroair.trinkets.traits.abilities.interfaces.IAbilityInterface;
 import xzeroair.trinkets.traits.elements.Element;
 import xzeroair.trinkets.util.TrinketsConfig;
 import xzeroair.trinkets.util.config.ClientConfig.ClientConfigItems.ClientConfigDragonsEye;
-import xzeroair.trinkets.util.config.ServerConfig;
 import xzeroair.trinkets.util.config.trinkets.ConfigDragonsEye;
 import xzeroair.trinkets.util.helpers.TranslationHelper;
 import xzeroair.trinkets.util.helpers.TranslationHelper.KeyBindEntry;
@@ -50,7 +54,13 @@ public class TrinketDragonsEye extends AccessoryBase {
 	@Override
 	public void getSubItems(CreativeTabs tab, NonNullList<ItemStack> items) {
 		if (tab == this.getCreativeTab()) {
+			final ItemStack normal = new ItemStack(this, 1, 0);
+			items.add(normal);
 			final ItemStack fire = new ItemStack(this, 1, 0);
+			Capabilities.getTrinketProperties(fire, prop -> {
+				prop.setVariant(1);
+				prop.getElementAttributes().setPrimaryElement(Elements.FIRE);
+			});
 			items.add(fire);
 			if (serverConfig.compat.iaf.ICE_VARIANT) {
 				final ItemStack ice = new ItemStack(this, 1, 0);
@@ -133,7 +143,7 @@ public class TrinketDragonsEye extends AccessoryBase {
 			}
 		} else if (serverConfig.compat.iaf.LIGHTNING_VARIANT && isLightningVariant) {
 			abilities.add(new AbilityLightningImmunity());
-		}else {
+		} else {
 			abilities.add(new AbilityFireImmunity());
 			if (tan && serverConfig.compat.tan.immuneToHeat) {
 				abilities.add(new AbilityHeatImmunity());

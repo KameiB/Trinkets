@@ -12,6 +12,7 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -129,8 +130,8 @@ public class MoonRose extends BlockBush implements IsModelLoaded {
 
 	@Override
 	public void updateTick(World worldIn, BlockPos pos, IBlockState state, Random rand) {
-		// TODO Remove this method, unused
 		super.updateTick(worldIn, pos, state, rand);
+		this.checkAndDropBlock(worldIn, pos, state);
 	}
 
 	@Override
@@ -148,9 +149,32 @@ public class MoonRose extends BlockBush implements IsModelLoaded {
 		return EnumPlantType.Plains;
 	}
 
+	/**
+	 * Checks if this block can be placed exactly at the given position.
+	 */
+	@Override
+	public boolean canPlaceBlockAt(World worldIn, BlockPos pos) {
+		IBlockState soil = worldIn.getBlockState(pos.down());
+		return super.canPlaceBlockAt(worldIn, pos) && soil.getBlock().canSustainPlant(soil, worldIn, pos.down(), net.minecraft.util.EnumFacing.UP, this);
+	}
+
+	/**
+	 * Return true if the block can sustain a Bush
+	 */
+	@Override
+	protected boolean canSustainBush(IBlockState state) {
+		return (state.getBlock() == Blocks.GRASS) || (state.getBlock() == Blocks.DIRT) || (state.getBlock() == Blocks.FARMLAND);
+	}
+
 	@Override
 	public boolean canBlockStay(World worldIn, BlockPos pos, IBlockState state) {
-		return true;
+		if (state.getBlock() == this) //Forge: This function is called during world gen and placement, before this block is set, so if we are not 'here' then assume it's the pre-check.
+		{
+			IBlockState soil = worldIn.getBlockState(pos.down());
+			return soil.getBlock().canSustainPlant(soil, worldIn, pos.down(), net.minecraft.util.EnumFacing.UP, this);
+		}
+		return this.canSustainBush(worldIn.getBlockState(pos.down()));
+		//		return true;
 	}
 
 	@Override
@@ -189,11 +213,10 @@ public class MoonRose extends BlockBush implements IsModelLoaded {
 		final ItemStack stack = new ItemStack(state.getBlock());
 		final TileEntity te = world.getTileEntity(pos);
 		if (te instanceof TileEntityMoonRose) {
-			NBTTagCompound compound = Capabilities.getTEProperties(te, new NBTTagCompound(), (prop, tag) -> {
+			stack.setTagCompound(Capabilities.getTEProperties(te, new NBTTagCompound(), (prop, tag) -> {
 				prop.saveToNBT(tag);
 				return tag;
-			});
-			stack.setTagCompound(compound);
+			}));
 		}
 		drops.add(stack);
 	}

@@ -36,6 +36,10 @@ public class StringUtils {
 		}
 	}
 
+	/*
+	 * is effectively the same as getSubString, but intended for chaining a command
+	 * Could be useless
+	 */
 	public static String getCmdSubstring(String command, String cmdRegex) {
 		final Function<String, String> getRegexCmd = cmd -> {
 			final String regex = convertToRegex(cmdRegex, false);
@@ -44,6 +48,9 @@ public class StringUtils {
 		return getSubstring(command, getRegexCmd.apply(cmdRegex));
 	}
 
+	/*
+	 * Converts a String of text into a functional regex
+	 */
 	public static String convertToRegex(String regexInput, boolean caseSensitive) {
 		final Function<String, String> getRegexCmd = cmd -> {
 			if (!cmd.isEmpty()) {
@@ -69,6 +76,10 @@ public class StringUtils {
 		return getRegexCmd.apply(regexInput);
 	}
 
+	/*
+	 * String is the full text Regex is to split the text after finding the first
+	 * regex marker, it returns the substring after the regex
+	 */
 	public static String getSubstring(String string, String regex) {
 		if (!regex.isEmpty()) {
 			final String[] array = string.split(regex, 2);
@@ -83,6 +94,10 @@ public class StringUtils {
 		}
 	}
 
+	/*
+	 * Returns a Custom Class, which returns the next part of a command, and the
+	 * immediate previous command entry
+	 */
 	public static StringCommand getStringVariables(String string, String regex) {
 		String prefix = "";
 		String suffix = "";
@@ -192,7 +207,7 @@ public class StringUtils {
 	}
 
 	public static double getAccurateDouble(double value) {
-		return MathHelper.getDouble(Reference.DECIMALFORMAT.format(BigDecimal.valueOf(value)), value);
+		return getAccurateDouble(value, value);//MathHelper.getDouble(Reference.DECIMALFORMAT.format(BigDecimal.valueOf(value)), value);
 	}
 
 	public static double getAccurateDouble(double value, double defaultValue) {

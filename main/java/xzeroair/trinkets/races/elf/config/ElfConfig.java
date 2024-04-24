@@ -5,6 +5,7 @@ import net.minecraftforge.common.config.Config.LangKey;
 import net.minecraftforge.common.config.Config.Name;
 import net.minecraftforge.common.config.Config.RangeInt;
 import xzeroair.trinkets.util.Reference;
+import xzeroair.trinkets.util.config.race.RaceSizeConfig;
 
 public class ElfConfig {
 	private final String name = "elf";
@@ -64,6 +65,10 @@ public class ElfConfig {
 		}
 
 	}
+
+	@Name("Size")
+	@LangKey(Reference.MODID + ".config.race.size")
+	public final RaceSizeConfig size = new RaceSizeConfig(100, 100);
 
 	@Config.Comment({ "For More Information on Attributes", "https://minecraft.gamepedia.com/Attribute" })
 	@Name("Attributes")

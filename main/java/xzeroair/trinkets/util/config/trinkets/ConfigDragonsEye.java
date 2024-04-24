@@ -118,7 +118,7 @@ public class ConfigDragonsEye {
 			@LangKey(PREFIX + ".iceandfire.recipe.stage")
 			public int stage = 5;
 
-			@Config.Comment("Should there be an Ice Variant of the Dragons eye")
+			@Config.Comment("Should there be a Ice Variant of the Dragons eye")
 			@Name("01. Ice Variant")
 			@LangKey(PREFIX + ".iceandfire.ice.variant")
 			public boolean ICE_VARIANT = true;

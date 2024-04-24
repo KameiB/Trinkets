@@ -63,13 +63,13 @@ public class MagicStats extends CapabilityBase<MagicStats, EntityLivingBase> {
 	}
 
 	public boolean onRegenCooldown() {
-		if (manaRegenTimeout > 0) {
-			manaRegenTimeout--;
-			return true;
-		} else {
+		boolean manaEnabled = TrinketsConfig.SERVER.mana.mana_enabled;
+		if (!manaEnabled || (manaRegenTimeout <= 0)) {
 			manaRegenTimeout = 0;
 			return false;
 		}
+		manaRegenTimeout--;
+		return true;
 	}
 
 	@Override
@@ -105,8 +105,7 @@ public class MagicStats extends CapabilityBase<MagicStats, EntityLivingBase> {
 		}
 		if (this.getMana() > this.getMaxMana()) {
 			this.setMana(this.getMaxMana());
-		}
-		if (this.getMana() < this.getMaxMana()) {
+		} else if (this.getMana() < this.getMaxMana()) {
 			manaUpdateTickRate++;
 			final IAttributeInstance cooldown = object.getAttributeMap().getAttributeInstance(MagicAttributes.regenCooldown);
 			double cooldownMulti = cooldown != null ? cooldown.getAttributeValue() : 1D;
@@ -143,14 +142,7 @@ public class MagicStats extends CapabilityBase<MagicStats, EntityLivingBase> {
 	public void setMana(float mana) {
 		//		System.out.println(this.mana + "|" + mana);
 		if (!object.world.isRemote) {
-			if (mana > this.getMaxMana()) {
-				this.mana = this.getMaxMana();
-			} else if (mana < 0) {
-				this.mana = 0;
-			} else {
-				this.mana = mana;
-			}
-			//		sync = true;
+			this.mana = Math.min(Math.max(mana, 0), this.getMaxMana());
 			this.sendManaToPlayer(object);
 		}
 	}
@@ -160,27 +152,22 @@ public class MagicStats extends CapabilityBase<MagicStats, EntityLivingBase> {
 	}
 
 	public boolean spendMana(float cost) {
-		final boolean isCreative = (object instanceof EntityPlayer) && (((EntityPlayer) object).isCreative());
-		boolean spend = true;
-		if (isCreative || !TrinketsConfig.SERVER.mana.mana_enabled) {
+		boolean isCreative = (object instanceof EntityPlayer) && ((EntityPlayer) object).isCreative();
+		boolean manaEnabled = TrinketsConfig.SERVER.mana.mana_enabled;
+
+		if (!manaEnabled || isCreative) {
 			return true;
-		} else if (cost <= 0) {
-			return true;
-		} else if (cost <= this.getMana()) {
-			spend = true;
-		} else {
-			spend = false;
-			if ((object instanceof EntityPlayer) && object.world.isRemote) {
-				final String Message = "No MP";
-				((EntityPlayer) object).sendStatusMessage(new TextComponentString(Message), true);
-			}
 		}
 
-		if (spend == true) {
+		if ((cost > 0) && (cost <= this.getMana())) {
 			this.setMana(mana - cost);
 			this.setManaRegenTimeout();
+			return true;
+		} else if ((cost > this.getMana()) && (object instanceof EntityPlayer) && object.world.isRemote) {
+			((EntityPlayer) object).sendStatusMessage(new TextComponentString("No MP"), true);
 		}
-		return spend;
+
+		return false;
 	}
 
 	public float getMaxMana() {

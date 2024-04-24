@@ -16,6 +16,7 @@ import net.minecraft.inventory.SlotCrafting;
 import net.minecraft.item.ItemArmor;
 import net.minecraft.item.ItemStack;
 import xzeroair.trinkets.Trinkets;
+import xzeroair.trinkets.api.TrinketHelper;
 import xzeroair.trinkets.capabilities.Capabilities;
 import xzeroair.trinkets.capabilities.InventoryContainerCapability.ITrinketContainerHandler;
 import xzeroair.trinkets.capabilities.InventoryContainerCapability.TrinketContainerProvider;
@@ -139,6 +140,19 @@ public class TrinketInventoryContainer extends Container {
 		if (!player.world.isRemote) {
 			this.clearContainer(player, player.world, craftMatrix);
 		}
+		if (!TrinketsConfig.SERVER.GUI.guiEnabled) {
+			TrinketHelper.getTrinketHandler(player, Trinket -> {
+				for (int i = 0; i < Trinket.getSlots(); i++) {
+					ItemStack s = Trinket.getStackInSlot(i);
+					if (!s.isEmpty()) {
+						ItemStack extracted = Trinket.extractItem(i, s.getCount(), false);
+						Capabilities.getTrinketProperties(extracted, prop -> prop.itemUnequipped(extracted, player));
+						player.inventory.placeItemBackInInventory(player.world, extracted);
+						Trinket.setStackInSlot(i, ItemStack.EMPTY);
+					}
+				}
+			});
+		}
 	}
 
 	@Override
@@ -258,7 +272,7 @@ public class TrinketInventoryContainer extends Container {
 
 	@Override
 	public boolean canInteractWith(EntityPlayer playerIn) {
-		return true;
+		return TrinketsConfig.SERVER.GUI.guiEnabled;
 	}
 
 }

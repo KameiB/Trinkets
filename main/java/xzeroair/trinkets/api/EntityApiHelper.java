@@ -13,4 +13,8 @@ public class EntityApiHelper {
 		return Capabilities.getEntityProperties(entity, "", (prop, name) -> prop.getCurrentRace().getName());
 	}
 
+	public static String getEntityRaceRegistryName(Entity entity) {
+		return Capabilities.getEntityProperties(entity, "", (prop, name) -> prop.getCurrentRace().getRegistryName().toString());
+	}
+
 }

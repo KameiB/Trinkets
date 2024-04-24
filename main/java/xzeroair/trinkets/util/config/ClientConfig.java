@@ -178,6 +178,11 @@ public class ClientConfig {
 			@Config.Comment("")
 			@LangKey(cfgPrefix + ".render.trinket")
 			public boolean doRender = true;
+
+			@Config.Name("Render helmet slot")
+			@Config.Comment("")
+			@LangKey(cfgPrefix + ".ender_tiara.render.helmet")
+			public boolean doRenderHelmet = true;
 		}
 
 		@Config.Name("Stone of the Sea Settings")

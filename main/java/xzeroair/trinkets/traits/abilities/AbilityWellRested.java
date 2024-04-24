@@ -31,14 +31,14 @@ public class AbilityWellRested extends Ability implements IPotionAbility, ISleep
 		if (entity.world.isRemote) {
 			return;
 		}
-		if (entity instanceof EntityPlayer) {
-			if (((EntityPlayer) entity).isPlayerFullyAsleep()) {
-
-			} else {
-				return;
-			}
-		}
 		if (TrinketsConfig.SERVER.Items.TEDDY_BEAR.sleep_bonus) {
+			if (entity instanceof EntityPlayer) {
+				if (((EntityPlayer) entity).isPlayerFullyAsleep()) {
+
+				} else {
+					return;
+				}
+			}
 			final String[] config = TrinketsConfig.SERVER.Items.TEDDY_BEAR.buffs;
 			int amount = TrinketsConfig.SERVER.Items.TEDDY_BEAR.randomBuff;
 			if (amount > config.length) {

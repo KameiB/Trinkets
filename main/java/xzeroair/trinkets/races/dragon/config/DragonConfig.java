@@ -5,6 +5,7 @@ import net.minecraftforge.common.config.Config.LangKey;
 import net.minecraftforge.common.config.Config.Name;
 import xzeroair.trinkets.init.ModItems;
 import xzeroair.trinkets.util.Reference;
+import xzeroair.trinkets.util.config.race.RaceSizeConfig;
 
 public class DragonConfig {
 	private final String name = "dragon";
@@ -59,6 +60,11 @@ public class DragonConfig {
 			@Name("00. Immune to Heat")
 			@LangKey(Reference.MODID + ".config." + ModItems.DragonsEye + ".toughasnails.immunity.heat")
 			public boolean immuneToHeat = true;
+
+			@Config.Comment("If Tough as Nails is Installed, Should the player be immune to Cold")
+			@Name("01. Immune to Cold")
+			@LangKey(Reference.MODID + ".config." + ModItems.DragonsEye + ".toughasnails.immunity.cold")
+			public boolean immuneToCold = true;
 		}
 
 		@Name("Fire Resistance Tiers")
@@ -71,6 +77,10 @@ public class DragonConfig {
 		}
 
 	}
+
+	@Name("Size")
+	@LangKey(Reference.MODID + ".config.race.size")
+	public final RaceSizeConfig size = new RaceSizeConfig(120, 120);
 
 	@Config.Comment({ "For More Information on Attributes", "https://minecraft.gamepedia.com/Attribute" })
 	@Name("Attributes")

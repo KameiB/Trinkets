@@ -4,6 +4,7 @@ import net.minecraftforge.common.config.Config;
 import net.minecraftforge.common.config.Config.LangKey;
 import net.minecraftforge.common.config.Config.Name;
 import xzeroair.trinkets.util.Reference;
+import xzeroair.trinkets.util.config.race.RaceSizeConfig;
 
 //@formatter:off
 public class DwarfConfig {
@@ -99,6 +100,10 @@ public class DwarfConfig {
 			}
 
 		}
+
+		@Name("Size")
+		@LangKey(Reference.MODID + ".config.race.size")
+		public final RaceSizeConfig size = new RaceSizeConfig(75, 75);
 
 		@Config.Comment({"For More Information on Attributes", "https://minecraft.gamepedia.com/Attribute"})
 		@Name("Attributes")

@@ -9,9 +9,6 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemArmor.ArmorMaterial;
 import net.minecraftforge.common.util.EnumHelper;
 import xzeroair.trinkets.Trinkets;
-import xzeroair.trinkets.items.ViewerItem;
-import xzeroair.trinkets.items.base.BaseArrow;
-import xzeroair.trinkets.items.base.BaseBow;
 import xzeroair.trinkets.items.base.ItemBase;
 import xzeroair.trinkets.items.base.RaceFood;
 import xzeroair.trinkets.items.base.TrinketRaceBase;
@@ -44,7 +41,6 @@ import xzeroair.trinkets.items.trinkets.TrinketGreaterInertia;
 import xzeroair.trinkets.items.trinkets.TrinketInertiaNull;
 import xzeroair.trinkets.items.trinkets.TrinketPoisonStone;
 import xzeroair.trinkets.items.trinkets.TrinketPolarized;
-import xzeroair.trinkets.items.trinkets.TrinketRibbonBow;
 import xzeroair.trinkets.items.trinkets.TrinketSeaStone;
 import xzeroair.trinkets.items.trinkets.TrinketTeddyBear;
 import xzeroair.trinkets.items.trinkets.TrinketWeightless;
@@ -155,17 +151,8 @@ public class ModItems {
 	public static class misc  {
 		public static final List<Item> ITEMS = new ArrayList<>();
 
-		public static final Item Bow = new BaseBow("trinket_bow");
-		public static final Item BowArrow = new BaseArrow("trinket_arrow");
-		public static final Item RibbonBow = new TrinketRibbonBow("ribbon_bow");
-		public static final Item ViewerItem = new ViewerItem("viewer_item");
-//		public static final Item GlitterBow = new TrinketGlitterBow();
 		protected static void registerItems() {
-//			registerItem(Bow);
-//			registerItem(BowArrow);
-//			registerItem(RibbonBow);
-//			registerItem(ViewerItem);
-//			registerItem(GlitterBow);
+
 		}
 
 		private static void registerItem(Item item) {

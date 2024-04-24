@@ -76,12 +76,16 @@ public class Element extends IForgeRegistryEntry.Impl<Element> {// implements IN
 
 	public static void registerElements() {
 		Registry.register(new NeutralElement());
-		Registry.register(new IceElement());
+		Registry.register(new AirElement());
+		Registry.register(new DarkElement());
+		Registry.register(new EarthElement());
 		Registry.register(new FireElement());
-		Registry.register(new WaterElement());
+		Registry.register(new IceElement());
+		Registry.register(new LightElement());
 		Registry.register(new LightningElement());
-		//			Registry.register(new EarthElement());
-		//			Registry.register(new VoidElement());
+		Registry.register(new PoisonElement());
+		Registry.register(new VoidElement());
+		Registry.register(new WaterElement());
 	}
 
 }

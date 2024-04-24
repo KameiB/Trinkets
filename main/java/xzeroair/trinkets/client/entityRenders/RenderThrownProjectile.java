@@ -59,9 +59,9 @@ public class RenderThrownProjectile<T extends Entity> extends Render<T> {
 		//			final int offset = particleMaxAge;
 		//			final float f4 = particleScale;
 		//
-		////			final int b = this.getBrightnessForRender(partialTicks);
-		////			final int j = (b >> 16) & 65535;
-		////			final int k = b & 65535;
+		//			//			final int b = this.getBrightnessForRender(partialTicks);
+		//			//			final int j = (b >> 16) & 65535;
+		//			//			final int k = b & 65535;
 		//			final float f5 = (float) ((entity.prevPosX + ((entity.posX - entity.prevPosX) * partialTicks)) - x);
 		//			final float f6 = (float) ((entity.prevPosY + ((entity.posY - entity.prevPosY) * partialTicks)) - y);
 		//			final float f7 = (float) ((entity.prevPosZ + ((entity.posZ - entity.prevPosZ) * partialTicks)) - z);
@@ -84,6 +84,7 @@ public class RenderThrownProjectile<T extends Entity> extends Render<T> {
 		//					avec3d[l] = vec3d.scale(2.0D * avec3d[l].dotProduct(vec3d)).add(avec3d[l].scale((f9 * f9) - vec3d.dotProduct(vec3d))).add(vec3d.crossProduct(avec3d[l]).scale(2.0F * f9));
 		//				}
 		//			}
+		//			buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX_COLOR_NORMAL);
 		//			buffer.pos(f5 + avec3d[0].x, f6 + avec3d[0].y, f7 + avec3d[0].z).tex(uF * tileWidth, vF2 * tileHeight).color(particleRed, particleGreen, particleBlue, particleAlpha).endVertex();//.lightmap(j, k).endVertex();
 		//			buffer.pos(f5 + avec3d[1].x, f6 + avec3d[1].y, f7 + avec3d[1].z).tex(uF2 * tileWidth, vF2 * tileHeight).color(particleRed, particleGreen, particleBlue, particleAlpha).endVertex();//.lightmap(j, k).endVertex();
 		//			buffer.pos(f5 + avec3d[2].x, f6 + avec3d[2].y, f7 + avec3d[2].z).tex(uF2 * tileWidth, vF * tileHeight).color(particleRed, particleGreen, particleBlue, particleAlpha).endVertex();//.lightmap(j, k).endVertex();
@@ -94,7 +95,7 @@ public class RenderThrownProjectile<T extends Entity> extends Render<T> {
 		//		this.bindEntityTexture(entity);
 		//		GlStateManager.translate((float) x, (float) y, (float) z);
 		//		GlStateManager.enableRescaleNormal();
-		//		GlStateManager.scale(2.0F, 2.0F, 2.0F);
+		//		GlStateManager.scale(1.0F, 1.0F, 1.0F);
 		//		final Tessellator tessellator = Tessellator.getInstance();
 		//		final BufferBuilder bufferbuilder = tessellator.getBuffer();
 		//		final float f = 1.0F;
@@ -108,13 +109,29 @@ public class RenderThrownProjectile<T extends Entity> extends Render<T> {
 		//			GlStateManager.enableOutlineMode(this.getTeamColor(entity));
 		//		}
 		//
-		//		bufferbuilder.begin(7, DefaultVertexFormats.POSITION_TEX_NORMAL);
-		//		bufferbuilder.pos(-0.5D, -0.25D, 0.0D).tex(0.0D, 1.0D).normal(0.0F, 1.0F, 0.0F).endVertex();
-		//		bufferbuilder.pos(0.5D, -0.25D, 0.0D).tex(1.0D, 1.0D).normal(0.0F, 1.0F, 0.0F).endVertex();
-		//		bufferbuilder.pos(0.5D, 0.75D, 0.0D).tex(1.0D, 0.0D).normal(0.0F, 1.0F, 0.0F).endVertex();
-		//		bufferbuilder.pos(-0.5D, 0.75D, 0.0D).tex(0.0D, 0.0D).normal(0.0F, 1.0F, 0.0F).endVertex();
+		//		//		GlStateManager.enableBlend();
+		//		//		GlStateManager.disableAlpha();
+		//		bufferbuilder.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX_COLOR_NORMAL);
+		//		bufferbuilder.pos(-0.5D, -0.25D, 0.0D).tex(0.0D, 1.0D).color(1, 0.5F, 0, 0.8F).normal(0.0F, 1.0F, 0.0F).endVertex();
+		//		bufferbuilder.pos(0.5D, -0.25D, 0.0D).tex(1.0D, 1.0D).color(1, 0.5F, 0, 0.8F).normal(0.0F, 1.0F, 0.0F).endVertex();
+		//		bufferbuilder.pos(0.5D, 0.75D, 0.0D).tex(1.0D, 0.0D).color(1, 0.5F, 0, 0.8F).normal(0.0F, 1.0F, 0.0F).endVertex();
+		//		bufferbuilder.pos(-0.5D, 0.75D, 0.0D).tex(0.0D, 0.0D).color(1, 0.5F, 0, 0.8F).normal(0.0F, 1.0F, 0.0F).endVertex();
 		//		tessellator.draw();
+		//		//		GlStateManager.disableBlend();
+		//		//		GlStateManager.enableAlpha();
 		//
+		//		//		GlStateManager.disableTexture2D();
+		//		//		bufferbuilder.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_COLOR);
+		//		//		float red = 1F;
+		//		//		float green = 0F;
+		//		//		float blue = 0F;
+		//		//		float alpha = 0.5F;
+		//		//		bufferbuilder.pos(-0.5D, -0.25D, 0.0D).color(red, green, blue, alpha).endVertex();
+		//		//		bufferbuilder.pos(0.5D, -0.25D, 0.0D).color(red, green, blue, alpha).endVertex();
+		//		//		bufferbuilder.pos(0.5D, 0.75D, 0.0D).color(red, green, blue, alpha).endVertex();
+		//		//		bufferbuilder.pos(-0.5D, 0.75D, 0.0D).color(red, green, blue, alpha).endVertex();
+		//		//		tessellator.draw();
+		//		//		GlStateManager.enableTexture2D();
 		//		if (renderOutlines) {
 		//			GlStateManager.disableOutlineMode();
 		//			GlStateManager.disableColorMaterial();
@@ -131,9 +148,9 @@ public class RenderThrownProjectile<T extends Entity> extends Render<T> {
 	 */
 	@Override
 	public ResourceLocation getEntityTexture(T entity) {
-		//		return null;
+		return null;
 		//		return DRAGON_FIREBALL_TEXTURE;
-		return null;//DRAGON_FIREBALL_TEXTURE;
+		//		return TEXTURES;//DRAGON_FIREBALL_TEXTURE;
 	}
 
 	//	/**

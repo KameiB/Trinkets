@@ -68,9 +68,11 @@ public class EntityProperties extends CapabilityBase<EntityProperties, EntityLiv
 	protected boolean traitShown = true;
 	protected String traitColor = "16777215";
 	protected boolean isFake = false;
+	protected ItemStack raceProvider = ItemStack.EMPTY;
 
 	protected KeybindHandler keybindHandler;
 	protected EntityRacePropertiesHandler properties;
+	//	protected ElementalAttributes elementalAttributes;
 	protected AbilityHandler abilities;
 
 	protected float stepHeightPrev = 0.6F;
@@ -89,6 +91,7 @@ public class EntityProperties extends CapabilityBase<EntityProperties, EntityLiv
 		imbued = EntityRaces.none;
 		current = EntityRaces.none;
 		abilities = new AbilityHandler(object);
+		//		elementalAttributes = new ElementalAttributes();
 		properties = current.getRaceHandler(object).setEntityProperties(this);
 	}
 
@@ -118,6 +121,10 @@ public class EntityProperties extends CapabilityBase<EntityProperties, EntityLiv
 	public AbilityHandler getAbilityHandler() {
 		return abilities;
 	}
+
+	//	public ElementalAttributes getElementalAttributes() {
+	//		return elementalAttributes;
+	//	}
 
 	// ABILITIES END
 
@@ -279,12 +286,13 @@ public class EntityProperties extends CapabilityBase<EntityProperties, EntityLiv
 			return;
 		}
 		final EntityRace race = this.getEntityRace(); // Causes a lot of Overhead
+
 		final TransformationEvent.RaceUpdateEvent UpdateEvent = new RaceUpdateEvent(object, this, this.getRaceHandler().getRace(), race);
 		if (!MinecraftForge.EVENT_BUS.post(UpdateEvent)) {
 			if (UpdateEvent.raceChanged()) {
 				EntityRace newRace = UpdateEvent.getNewRace();
 				if (newRace == null) {
-					newRace = EntityRaces.none;
+					newRace = EntityRaces.human;
 				}
 				final EntityRacePropertiesHandler oldProperties = this.getRaceHandler();
 				final TransformationEvent.EndTransformation end = new EndTransformation(object, this, oldProperties.getRace());
@@ -292,6 +300,7 @@ public class EntityProperties extends CapabilityBase<EntityProperties, EntityLiv
 					return;
 				}
 				oldProperties.onTransformEnd();
+				//				this.getElementalAttributes().setPrimaryElement(Elements.NEUTRAL);
 				AttributeHelper.removeAttributesByUUID(object, this.getPreviousRace().getUUID(), oldProperties.getRace().getUUID());
 				this.setPreviousRace(oldProperties.getRace());
 				final Entity mount = object.getRidingEntity();
@@ -305,6 +314,13 @@ public class EntityProperties extends CapabilityBase<EntityProperties, EntityLiv
 					}
 				}
 				properties = newRace.getRaceHandler(object).setEntityProperties(this);
+				//				if ((raceProvider != null) && !raceProvider.isEmpty()) {
+				//					ItemStack stack = raceProvider;
+				//					Item item = stack.getItem();
+				//					if (item instanceof IElementProvider) { // THIS IS BAD, WE NEED A TEMPORARY ELEMENT
+				//						this.getElementalAttributes().setPrimaryElement(((IElementProvider) item).getPrimaryElement(stack));
+				//					}
+				//				}
 				properties.onTransform();
 				this.setCurrent(newRace);
 
@@ -335,13 +351,13 @@ public class EntityProperties extends CapabilityBase<EntityProperties, EntityLiv
 			this.setFake(true);
 			return potionRace;
 		}
-		ItemStack raceProvider = this.getRaceProvider();
-		if (!raceProvider.isEmpty()) {
+		ItemStack provider = this.getRaceProvider();
+		if (!provider.isEmpty()) {
 			this.setFake(true);
-			return ((IRaceProvider) raceProvider.getItem()).getRace();
+			return ((IRaceProvider) provider.getItem()).getRace();
 		}
 		final EntityRace imbued = this.getImbuedRace();
-		if ((imbued != null) && !imbued.equals(EntityRaces.none)) {
+		if ((imbued != null) && !imbued.equals(EntityRaces.human)) {
 			this.setFake(false);
 			return imbued;
 		} else {
@@ -367,10 +383,13 @@ public class EntityProperties extends CapabilityBase<EntityProperties, EntityLiv
 				object, stack -> stack.getItem() instanceof IRaceProvider
 		);
 		if ((count > 1) || (count < 1)) {
+			//			raceProvider =
 			return ItemStack.EMPTY;
 		} else {
+			//			raceProvider =
 			return TrinketHelper.getAccessory(object, stack -> stack.getItem() instanceof IRaceProvider);
 		}
+		//		return raceProvider;
 	}
 
 	private void stepHeightHandler() {
@@ -379,24 +398,21 @@ public class EntityProperties extends CapabilityBase<EntityProperties, EntityLiv
 		 */
 		final IAttributeInstance attribute = object.getEntityAttribute(JumpAttribute.stepHeight);
 		if ((attribute != null) && !attribute.getModifiers().isEmpty()) {
-			final double f = attribute.getAttributeValue();
 			final float defaultStepHeight = (float) attribute.getBaseValue();
-			final float result = (float) (f);
-			final float step = object.stepHeight;
+			final float attributeStepHeight = (float) attribute.getAttributeValue();
+			final float currentStepHeight = object.stepHeight;
 			object.stepHeight = defaultStepHeight;
-			if ((step - object.stepHeight) == 0F) {
-				object.stepHeight = result;
+			if ((currentStepHeight - object.stepHeight) == 0F) {
+				object.stepHeight = attributeStepHeight;
 				stepHeightPrev = defaultStepHeight;
-			} else if (((step - object.stepHeight) - result) == -defaultStepHeight) {
-				object.stepHeight = result;
+			} else if (((currentStepHeight - object.stepHeight) - attributeStepHeight) == -defaultStepHeight) {
+				object.stepHeight = attributeStepHeight;
 				stepHeightPrev = defaultStepHeight;
 			} else {
 				final float stepP = stepHeightPrev;
-				stepHeightPrev = step;
-				if (((result - defaultStepHeight) + step) == ((result - defaultStepHeight) + stepP)) {
-					object.stepHeight = (result - defaultStepHeight) + stepHeightPrev;
-				} else {
-
+				stepHeightPrev = currentStepHeight;
+				if (((attributeStepHeight - defaultStepHeight) + currentStepHeight) == ((attributeStepHeight - defaultStepHeight) + stepP)) {
+					object.stepHeight = (attributeStepHeight - defaultStepHeight) + stepHeightPrev;
 				}
 			}
 		}
@@ -697,6 +713,7 @@ public class EntityProperties extends CapabilityBase<EntityProperties, EntityLiv
 		compound.setBoolean("child", this.isChild());
 		this.getRaceHandler().savedNBTData(compound);
 		this.getAbilityHandler().saveAbilitiesToNBT(compound);
+		//		this.getElementalAttributes().saveToNBT(compound);
 		return compound;
 	}
 
@@ -764,6 +781,7 @@ public class EntityProperties extends CapabilityBase<EntityProperties, EntityLiv
 		}
 		this.getRaceHandler().loadNBTData(compound);
 		this.getAbilityHandler().loadAbilitiesFromNBT(compound);
+		//		this.getElementalAttributes().loadFromNBT(compound);
 	}
 
 	private static class TempCache<A, B> {

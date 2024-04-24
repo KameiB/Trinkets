@@ -34,8 +34,28 @@ public class RaceDragon extends EntityRacePropertiesHandler {
 
 	@Override
 	public void startTransformation() {
+		// Night Vision
 		this.addAbility(new AbilityNightVision().toggleAbility(true));
+
+		// Elemental Features
+		//		if (this.getEntityProperties().getElementalAttributes().getPrimaryElement() == Elements.ICE) {
+		//			this.addAbility(new AbilityIceImmunity());
+		//			if ((Trinkets.ToughAsNails || Trinkets.SimpleDifficulty) && serverConfig.compat.tan.immuneToCold) {
+		//				this.addAbility(new AbilityColdImmunity());
+		//			}
+		//		} else if (this.getEntityProperties().getElementalAttributes().getPrimaryElement() == Elements.LIGHTNING) {
+		//			this.addAbility(new AbilityLightningImmunity());
+		//		} else {
+		if (serverConfig.breath_damage > 0) {
+			this.addAbility(new AbilityFireBreathing());
+		}
+		if ((Trinkets.ToughAsNails || Trinkets.SimpleDifficulty) && serverConfig.compat.tan.immuneToHeat) {
+			this.addAbility(new AbilityHeatImmunity());
+		}
 		this.addAbility(new AbilityFireImmunity());
+		//		}
+
+		// Other Abilities
 		if (TrinketsConfig.SERVER.Items.DRAGON_EYE.oreFinder) {
 			this.addAbility(new AbilityBlockFinder());
 		}
@@ -47,12 +67,6 @@ public class RaceDragon extends EntityRacePropertiesHandler {
 							.setFlightSpeed((float) serverConfig.flight_speed)
 							.setFlightCost(serverConfig.flight_cost)
 			);
-		}
-		if (serverConfig.breath_damage > 0) {
-			this.addAbility(new AbilityFireBreathing());
-		}
-		if ((Trinkets.ToughAsNails || Trinkets.SimpleDifficulty) && serverConfig.compat.tan.immuneToHeat) {
-			this.addAbility(new AbilityHeatImmunity());
 		}
 	}
 

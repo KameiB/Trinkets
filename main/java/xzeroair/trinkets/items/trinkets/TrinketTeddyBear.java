@@ -50,9 +50,7 @@ public class TrinketTeddyBear extends AccessoryBase {
 
 	@Override
 	public void initAbilities(ItemStack stack, EntityLivingBase entity, List<IAbilityInterface> abilities) {
-		if (serverConfig.sleep_bonus) {
-			abilities.add(new AbilityWellRested());
-		}
+		abilities.add(new AbilityWellRested());
 	}
 
 	@Override
@@ -79,7 +77,14 @@ public class TrinketTeddyBear extends AccessoryBase {
 			});
 			//			String xzeroair = "f5f28614-4e8b-4788-ae78-b020493dc5cb";
 			final boolean hasDisplayName = stack.hasDisplayName();
-			if ((crafterID.equalsIgnoreCase("854adc0b-ae55-48d6-b7ba-e641a1eebf42") && !hasDisplayName) || name.contains("nyan")) {
+			//		} else if
+			if ((crafterID.equalsIgnoreCase("b4817e56-db30-4fdb-9c4c-bba3e0378e0a") && !hasDisplayName) || name.contains("rixxi")) {
+				return 13;
+			} else if ((crafterID.equalsIgnoreCase("6e6cc84d-6d4d-41a4-ba8b-47d786b00bae") && !hasDisplayName) || name.contains("cowsaysboom")) {
+				return 12;
+			} else if (name.contains("nyan")) {
+				return 11;
+			} else if ((crafterID.equalsIgnoreCase("854adc0b-ae55-48d6-b7ba-e641a1eebf42") && !hasDisplayName)) {
 				return 10;
 			} else if (name.contains("ken")) {
 				return 9;
@@ -219,10 +224,19 @@ public class TrinketTeddyBear extends AccessoryBase {
 		final ModelResourceLocation ryu = new ModelResourceLocation(this.getRegistryName().toString() + "_ryu", "inventory");
 		final ModelResourceLocation ken = new ModelResourceLocation(this.getRegistryName().toString() + "_ken", "inventory");
 		final ModelResourceLocation nyan = new ModelResourceLocation(this.getRegistryName().toString() + "_nyan", "inventory");
-		ModelBakery.registerItemVariants(this, normal, scary, rembo, shivaxi, bee, panda, artsy, twilight, ryu, ken, nyan);
+		final ModelResourceLocation nyan_old = new ModelResourceLocation(this.getRegistryName().toString() + "_nyan_old", "inventory");
+		final ModelResourceLocation boom = new ModelResourceLocation(this.getRegistryName().toString() + "_boom", "inventory");
+		final ModelResourceLocation rixxi = new ModelResourceLocation(this.getRegistryName().toString() + "_rixxi", "inventory");
+		ModelBakery.registerItemVariants(this, normal, scary, rembo, shivaxi, bee, panda, artsy, twilight, ryu, ken, nyan, nyan_old, boom, rixxi);
 		ModelLoader.setCustomMeshDefinition(this, stack -> {
 			int type = this.getTeddyVariant(stack);
-			if (type == 10) {
+			if (type == 13) {
+				return rixxi;
+			} else if (type == 12) {
+				return boom;
+			} else if (type == 11) {
+				return nyan_old;
+			} else if (type == 10) {
 				return nyan;
 			} else if (type == 9) {
 				return ken;

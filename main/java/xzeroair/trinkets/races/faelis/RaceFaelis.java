@@ -1,6 +1,5 @@
 package xzeroair.trinkets.races.faelis;
 
-import java.util.TreeMap;
 import java.util.UUID;
 
 import javax.annotation.Nonnull;
@@ -10,6 +9,7 @@ import net.minecraft.client.renderer.entity.RenderPlayer;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.inventory.EntityEquipmentSlot;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemArmor;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.DamageSource;
@@ -67,23 +67,52 @@ public class RaceFaelis extends EntityRacePropertiesHandler {
 					hasMilkBuff = false;
 				}
 			}
-			try {
-				for (final ItemStack stack : entity.getArmorInventoryList()) {
-					if (!stack.isEmpty() && (stack.getItem() instanceof ItemArmor)) {
-						if (TrinketsConfig.SERVER.races.faelis.penalties) {
-							TreeMap<String, ArmorEntry> ArmorWeightValues = ConfigHelper.TrinketConfigStorage.ArmorWeightValues;
-							for (ArmorEntry entry : ArmorWeightValues.values()) {
-								if (entry.doesItemMatchEntry(stack)) {
-									if (entry.getWeight() != 0) {
-										amount -= entry.getWeight();
-										break;
-									}
+			if (TrinketsConfig.SERVER.races.faelis.penalties) {
+				try {
+					for (final ItemStack stack : entity.getEquipmentAndArmor()) {
+						final Item item = stack.getItem();
+						final String regName = item.getRegistryName().toString();
+						final String itemType = ConfigHelper.ArmorEntry.getItemType(stack);
+						if (!itemType.isEmpty()) {
+							final String ItemMaterial = ConfigHelper.ArmorEntry.getItemMaterial(stack).toLowerCase();
+							if (item instanceof ItemArmor) {
+								final ItemArmor armor = ((ItemArmor) item);
+								final String armorType = armor.armorType.getName();
+								ArmorEntry entry = ConfigHelper.TrinketConfigStorage.getEquipmentEntry(
+										regName + ":" + armorType,
+										regName,
+										"ObjectMaterial:" + ItemMaterial + ":" + armorType,
+										"ObjectMaterial:" + ItemMaterial
+								);
+								if (entry != null) {
+									amount -= entry.getEquipmentWeight();
 								}
+							} else {
+								final String hand = stack.isItemEqual(entity.getHeldItemMainhand()) ? "mainhand" : stack.isItemEqual(entity.getHeldItemOffhand()) ? "offhand" : "hand";
+								String[] mS = new String[] {
+										regName + ":" + hand,
+										regName,
+										"ObjectMaterial:" + ItemMaterial + ":" + hand + ":" + itemType,
+										"ObjectMaterial:" + ItemMaterial + ":" + hand + ":" + "tool",
+										"ObjectMaterial:" + ItemMaterial + ":" + "hand" + ":" + itemType,
+										"ObjectMaterial:" + ItemMaterial + ":" + "hand" + ":" + "tool",
+										"ObjectMaterial:" + ItemMaterial + ":" + itemType,
+										"ObjectMaterial:" + ItemMaterial + ":" + "tool",
+										"ObjectMaterial:" + ItemMaterial + ":" + hand,
+										"ObjectMaterial:" + ItemMaterial + ":" + "hand",
+										"ObjectMaterial:" + ItemMaterial,
+								};
+								final ArmorEntry main = ConfigHelper.TrinketConfigStorage.getEquipmentEntry(
+										(k, v) -> v.doesItemMatchEntry(stack), mS
+								);
+								double mW = main == null ? 0 : main.getEquipmentWeight();
+								amount -= mW;
 							}
 						}
 					}
+				} catch (final Exception e) {
+					e.printStackTrace();
 				}
-			} catch (final Exception e) {
 			}
 
 			if ((amount != 0) && !hasMilkBuff) {
@@ -93,7 +122,9 @@ public class RaceFaelis extends EntityRacePropertiesHandler {
 				movement.removeModifier(entity);
 				jump.removeModifier(entity);
 			}
-		} else {
+		} else
+
+		{
 			movement.removeModifier(entity);
 			jump.removeModifier(entity);
 		}

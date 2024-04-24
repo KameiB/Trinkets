@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Random;
 
+import javax.annotation.Nonnull;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.ResourceLocation;
@@ -128,17 +129,32 @@ public class Ability implements IAbilityInterface {
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
 
 	public boolean isCreativePlayer(Entity entity) {
-		final boolean flag = (entity instanceof EntityPlayer) && (((EntityPlayer) entity).isCreative() || ((EntityPlayer) entity).isSpectator());
+		final boolean flag = (entity instanceof EntityPlayer) && this.isCreativePlayer((EntityPlayer) entity);
+		return flag;
+	}
+
+	public boolean isCreativePlayer(@Nonnull EntityPlayer player) {
+		final boolean flag = player.isCreative() || player.isSpectator();
 		return flag;
 	}
 
 	public boolean isCreativeFlying(Entity entity) {
-		final boolean flag = (entity instanceof EntityPlayer) && ((((EntityPlayer) entity).capabilities.isFlying));
+		final boolean flag = (entity instanceof EntityPlayer) && this.isCreativeFlying(((EntityPlayer) entity));
+		return flag;
+	}
+
+	public boolean isCreativeFlying(@Nonnull EntityPlayer player) {
+		final boolean flag = player.capabilities.isFlying;
 		return flag;
 	}
 
 	public boolean isSpectator(Entity entity) {
-		final boolean flag = (entity instanceof EntityPlayer) && (((EntityPlayer) entity).isSpectator());
+		final boolean flag = (entity instanceof EntityPlayer) && this.isSpectator(((EntityPlayer) entity));
+		return flag;
+	}
+
+	public boolean isSpectator(@Nonnull EntityPlayer player) {
+		final boolean flag = player.isSpectator();
 		return flag;
 	}
 

@@ -72,6 +72,11 @@ public class EntityManaConfig {
 	@RangeDouble(min = 0, max = Double.MAX_VALUE)
 	public float bonus = 10;
 
+	@Config.Comment("Only players have Mana")
+	@Name("96. Only players")
+	@LangKey(PREFIX + ".mana.players_only")
+	public boolean players_only = false;
+
 	@Config.Comment("modid:item_name;meta;amount")
 	@Name("97. MP Recovery Items")
 	@LangKey(PREFIX + ".mana.recovery.list")

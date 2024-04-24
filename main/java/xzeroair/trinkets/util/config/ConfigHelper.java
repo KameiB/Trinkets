@@ -1,15 +1,30 @@
 package xzeroair.trinkets.util.config;
 
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.function.BiFunction;
+import java.util.function.BiPredicate;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 import javax.annotation.Nonnull;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EntityList;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemArmor;
-import net.minecraft.item.ItemArmor.ArmorMaterial;
+import net.minecraft.item.ItemAxe;
+import net.minecraft.item.ItemBow;
 import net.minecraft.item.ItemHoe;
+import net.minecraft.item.ItemPickaxe;
+import net.minecraft.item.ItemShears;
+import net.minecraft.item.ItemShield;
+import net.minecraft.item.ItemSpade;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemSword;
 import net.minecraft.item.ItemTool;
@@ -32,17 +47,29 @@ public class ConfigHelper {
 	private static String doubleRegexOptional = "(;" + doubleRegex + ")?";
 	private static String optionalWordRegex = "(;[a-zA-Z]*)?";
 
-	//	public static void parseEntityConfig(String[] configList) {
-	//
-	//	}
-
 	public static String cleanConfigEntry(String config) {
 		final String configEntry = config
 				.replaceAll("([\\[\\]\\|,;] ?)|(  )", " ").trim().replace(" ", ";");
 		return configEntry;
 	}
 
-	public static AttributeEntry getAttributeEntry(String string) {
+	private static final HashMap<String, ConfigHelper.AttributeEntry> attributeCacheMap = new HashMap<>();
+	private static final ConfigHelper.AttributeEntry NULL_ENTRY = new ConfigHelper.AttributeEntry("null", 0, 0, false);
+
+	public static HashMap<String, ConfigHelper.AttributeEntry> getAttributeCacheMap() {
+		return attributeCacheMap;
+	}
+
+	public static void refreshAttributeCacheMap() {
+		attributeCacheMap.clear();
+	}
+
+	public static ConfigHelper.AttributeEntry getAttributeEntry(String string) {
+		ConfigHelper.AttributeEntry temp = ConfigHelper.getAttributeCacheMap().computeIfAbsent(string, ConfigHelper::getAttributeEntryOld);
+		return temp == NULL_ENTRY ? null : temp;
+	}
+
+	public static AttributeEntry getAttributeEntryOld(String string) {
 		String configEntry = cleanConfigEntry(
 				string.replaceFirst("[nN][aA][mM][eE][:]", "")
 						.replaceFirst("[aA][mM][oO][uU][nN][tT][:]", "")
@@ -88,10 +115,7 @@ public class ConfigHelper {
 				}
 			}
 		}
-		if (isAttribute && !attribute.isEmpty() && (amount != 0)) {
-			return new AttributeEntry(attribute, amount, op, saved);
-		}
-		return null;
+		return isAttribute && !attribute.isEmpty() && (amount != 0.0) ? new ConfigHelper.AttributeEntry(attribute, amount, op, saved) : NULL_ENTRY;
 	}
 
 	private static <T> T continueCommand(String string, Function<String, T> func) {
@@ -104,10 +128,10 @@ public class ConfigHelper {
 
 	public static class TrinketConfigStorage {
 
-		public static TreeMap<String, MPRecoveryItem> MagicRecoveryItems = new TreeMap<>();
+		public static TreeMap<String, MPRecoveryItem> MagicRecoveryItems = new TreeMap();
 		public static TreeMap<Integer, TreasureEntry> TreasureBlocks = new TreeMap<>();
-		public static TreeMap<String, ConfigObject> ClimbableBlocks = new TreeMap<>();
-		public static TreeMap<String, ArmorEntry> ArmorWeightValues = new TreeMap<>();
+		public static LinkedHashMap<String, ConfigObject> ClimbableBlocks = new LinkedHashMap();
+		public static LinkedHashMap<String, ArmorEntry> ArmorWeightValues = new LinkedHashMap();
 
 		public static void init() {
 			initRecoveryItems();
@@ -130,6 +154,64 @@ public class ConfigHelper {
 			}
 		}
 
+		public static ArmorEntry getEquipmentEntry(String... strings) {
+			return getEquipmentEntry((Predicate<ArmorEntry>) null, strings);
+		}
+
+		public static ArmorEntry getEquipmentEntry(Predicate<ArmorEntry> predicate, String... strings) {
+			return getListEntry(ArmorWeightValues, predicate, strings);
+		}
+
+		public static ArmorEntry getEquipmentEntry(BiPredicate<String, ArmorEntry> predicate, String... strings) {
+			return getListEntry(ArmorWeightValues, predicate, strings);
+		}
+
+		public static <v, s> v getListEntry(Map<s, v> map, BiPredicate<s, v> predicate, s... keys) {
+			for (s s : keys) {
+				v e = map.get(s);
+				if (e != null) {
+					if ((predicate != null)) {
+						if (predicate.test(s, e)) {
+							return e;
+						}
+					} else {
+						return e;
+					}
+				}
+			}
+			if ((predicate != null) && (keys.length <= 0)) {
+				for (Entry<s, v> e : map.entrySet()) {
+					if (predicate.test(e.getKey(), e.getValue())) {
+						return e.getValue();
+					}
+				}
+			}
+			return null;
+		}
+
+		public static <v, s> v getListEntry(Map<s, v> map, Predicate<v> predicate, s... keys) {
+			for (s s : keys) {
+				v e = map.get(s);
+				if (e != null) {
+					if ((predicate != null)) {
+						if (predicate.test(e)) {
+							return e;
+						}
+					} else {
+						return e;
+					}
+				}
+			}
+			if ((predicate != null) && (keys.length <= 0)) {
+				for (Entry<s, v> e : map.entrySet()) {
+					if (predicate.test(e.getValue())) {
+						return e.getValue();
+					}
+				}
+			}
+			return null;
+		}
+
 		private static void initArmorWeightValues() {
 			if (!ArmorWeightValues.isEmpty()) {
 				ArmorWeightValues.clear();
@@ -138,7 +220,9 @@ public class ConfigHelper {
 			for (String entry : weightValues) {
 				ArmorEntry weightValue = new ArmorEntry(entry);
 				if (!weightValue.isEmpty()) {
-					ArmorWeightValues.put(weightValue.getObjectRegistryName(), weightValue);
+					String equipSlot = weightValue.getEquipmentSlot();
+					String toolType = weightValue.getEquipmentType();
+					ArmorWeightValues.put(weightValue.getObjectRegistryName() + (equipSlot.isEmpty() ? "" : ":" + equipSlot) + (toolType.isEmpty() ? "" : ":" + toolType), weightValue);
 				}
 			}
 		}
@@ -227,59 +311,155 @@ public class ConfigHelper {
 
 	public static class ArmorEntry extends ConfigObject {
 
-		protected double weight;
+		public static final Set<String> validHandTypes = new HashSet<>(
+				Arrays.asList(
+						"mainhand", "offhand"
+				)
+		);
+		public static final Set<String> validArmorTypes = new HashSet<>(
+				Arrays.asList(
+						"feet", "legs", "chest", "head"
+				)
+		);
+		public static final Set<String> validEquipmentTypes = new HashSet<>(
+				Arrays.asList(
+						"feet", "legs", "chest", "head", "mainhand", "offhand"
+				)
+		);
+		public static final Set<String> validArmsTypes = new HashSet<>(
+				Arrays.asList(
+						"sword", "shield", "axe", "pickaxe", "shovel", "hoe"
+				)
+		);
+		public static final Set<String> validToolTypes = new HashSet<>(
+				Arrays.asList(
+						"axe", "pickaxe", "shovel", "hoe", "shears"
+				)
+		);
+
+		protected double equipmentWeight;
+		protected String slotType;
+		protected String equipmentType;
 
 		public ArmorEntry(String configEntry) {
 			super(configEntry);
-			weight = TrinketsConfig.SERVER.races.faelis.penalty_amount;
-			this.initValues(this.getObjectArgs());
+		}
+
+		@Override
+		protected void generateConfigObject(String configEntry) {
+			slotType = "";
+			equipmentType = "";
+			configEntry
+					.replaceAll("([\\[\\]\\|,;] ?)", ";").trim();
+			final String[] checkArgs = configEntry.split(";", 2);
+			final String entry = StringUtils.getStringFromArray(checkArgs, 0);
+			if (!entry.isEmpty()) {
+				final String configArgs = StringUtils.getStringFromArray(checkArgs, 1);
+				if (entry.matches(itemIDRegex)) {
+					this.configureNormalEntry(entry, configArgs);
+				} else {
+					this.configureMaterialEntry(entry.toLowerCase(), configArgs);
+				}
+			}
 		}
 
 		@Override
 		public boolean doesItemMatchEntry(ItemStack stack) {
-			if ((stack == null) || stack.isEmpty() || this.isEmpty()) {
-				return false;
-			}
-			boolean superMatched = super.doesItemMatchEntry(stack);
-			if (stack.getItem() instanceof ItemArmor) {
-				ItemArmor armor = (ItemArmor) stack.getItem();
-				String armorType = armor.armorType.getName();
-				String optionalType = StringUtils.getStringFromArray(this.getObjectArgs(), 0);
-				if (!optionalType.isEmpty()) {
-					if (optionalType.matches("([a-zA-Z]{1,})")) {
-						String fixedType = this.fixArmorType(optionalType);
-						return superMatched && armorType.equalsIgnoreCase(fixedType);
-					}
+			boolean matches = super.doesItemMatchEntry(stack);
+			if (matches) {
+				final Item item = stack.getItem();
+				String t = this.getEquipmentType();
+				String s = this.getEquipmentSlot();
+				final String itemType = getItemType(stack).toLowerCase();
+				boolean typeMatch = t.isEmpty() ? true : t.equals("tool") ? (item instanceof ItemTool) || !isValidTools(itemType).isEmpty() : t.equals("armor") ? (item instanceof ItemArmor) || !isValidArmor(itemType).isEmpty() : t.equals(itemType);
+				boolean slotMatch = s.isEmpty() ? true : isValidArmor(itemType).isEmpty();
+				final String regName = item.getRegistryName().toString();
+				boolean regMatch = this.getObjectRegistryName().contentEquals(regName);
+				if (regMatch && typeMatch && slotMatch) {
+					return true;
 				}
+				return typeMatch && slotMatch;
 			}
-			return superMatched;
+			return matches;
 		}
 
-		private void initValues(String[] args) {
-			String optionalType = StringUtils.getStringFromArray(this.getObjectArgs(), 0);
-			if (!optionalType.isEmpty()) {
-				if (optionalType.matches(doubleRegex)) {
-					try {
-						weight = Double.parseDouble(optionalType);
-					} catch (Exception e) {
-						Trinkets.log.error("Invalid format for entry: " + this.getOriginalEntry());
-						e.printStackTrace();
-						weight = 0;
-					}
-				} else {
-					String optionalWeight = StringUtils.getStringFromArray(this.getObjectArgs(), 1);
-					if (!optionalWeight.isEmpty() && optionalWeight.matches(doubleRegex)) {
-						try {
-							weight = Double.parseDouble(optionalWeight);
-						} catch (Exception e) {
-							Trinkets.log.error("Invalid format for entry: " + this.getOriginalEntry());
-							e.printStackTrace();
-							weight = 0;
-						}
-					}
+		@Override
+		protected boolean doesMaterialMatch(ItemStack stack) {
+			return super.doesMaterialMatch(stack);
+		}
+
+		@Override
+		protected void configureNormalEntry(String entry, String configArgs) {
+			super.configureNormalEntry(entry, configArgs);
+			int index = 0;
+			if (!this.addEquipmentWeight(StringUtils.getStringFromArray(this.getObjectArgs(), index))) {
+				if (this.addEquipmentSlot(StringUtils.getStringFromArray(this.getObjectArgs(), index))) {
+					index += 1;
+				}
+				if (this.addArmType(StringUtils.getStringFromArray(this.getObjectArgs(), index))) {
+					index += 1;
+				}
+				this.addEquipmentWeight(StringUtils.getStringFromArray(this.getObjectArgs(), index));
+			}
+		}
+
+		@Override
+		protected void configureMaterialEntry(String entry, String configArgs) {
+			super.configureMaterialEntry(entry, configArgs);
+			int index = 0;
+			if (!this.addEquipmentWeight(StringUtils.getStringFromArray(this.getObjectArgs(), index))) {
+				if (this.addEquipmentSlot(StringUtils.getStringFromArray(this.getObjectArgs(), index))) {
+					index += 1;
+				}
+				if (this.addArmType(StringUtils.getStringFromArray(this.getObjectArgs(), index))) {
+					index += 1;
+				}
+				this.addEquipmentWeight(StringUtils.getStringFromArray(this.getObjectArgs(), index));
+			}
+		}
+
+		private boolean addArmType(String entry) {
+			String toolType = isValidArms(entry);
+			if (!toolType.isEmpty() || entry.equals("tool")) {
+				equipmentType = entry;
+				return true;
+			} else {
+				equipmentType = "";
+				return false;
+			}
+			//			if (!entry.isEmpty() && entry.matches("([a-zA-Z]{1,})")) {
+			//				slotType = this.fixArmorType(entry);
+			//				return true;
+			//			}
+		}
+
+		private boolean addEquipmentSlot(String entry) {
+			String slotType = isValidEquipmentSlot(this.fixArmorType(entry));
+			if (!slotType.isEmpty() || entry.equals("armor") || entry.equals("hand")) {
+				this.slotType = entry;
+				return true;
+			} else {
+				this.slotType = "";
+				return false;
+			}
+			//			if (!entry.isEmpty() && entry.matches("([a-zA-Z]{1,})")) {
+			//				slotType = this.fixArmorType(entry);
+			//				return true;
+			//			}
+		}
+
+		private boolean addEquipmentWeight(String entry) {
+			if (!entry.isEmpty() && entry.matches(doubleRegex)) {
+				try {
+					equipmentWeight = Double.parseDouble(entry);
+					return true;
+				} catch (Exception e) {
+					Trinkets.log.error("Invalid format for entry: " + this.getOriginalEntry());
+					e.printStackTrace();
 				}
 			}
-
+			equipmentWeight = 0;
+			return false;
 		}
 
 		protected String fixArmorType(String string) {
@@ -295,8 +475,110 @@ public class ConfigHelper {
 					.replace("hat", "head");
 		}
 
-		public final double getWeight() {
-			return weight;
+		public static String getItemMaterial(@Nonnull ItemStack stack) {
+			if (stack.isEmpty()) {
+				return "";
+			}
+			Item item = stack.getItem();
+			if (item instanceof ItemArmor) {
+				final ItemArmor armor = ((ItemArmor) item);
+				return armor.getArmorMaterial().toString();
+			} else if (item instanceof ItemSword) {
+				ItemSword sword = (ItemSword) item;
+				return sword.getToolMaterialName();
+			} else if (item instanceof ItemTool) {
+				ItemTool tool = (ItemTool) item;
+				return tool.getToolMaterialName();
+			} else if (item instanceof ItemHoe) {
+				ItemHoe hoe = (ItemHoe) item;
+				return hoe.getMaterialName();
+			}
+			return "";
+		}
+
+		public static String getItemType(@Nonnull ItemStack stack) {
+			if (stack.isEmpty()) {
+				return "";
+			}
+			Item item = stack.getItem();
+			if (item instanceof ItemArmor) {
+				return ((ItemArmor) item).armorType.getName();
+			}
+			if (item instanceof ItemSword) {
+				return "sword";
+			}
+			if (item instanceof ItemBow) {
+				return "bow";
+			}
+			if (item instanceof ItemShield) {
+				return "shield";
+			}
+			if (item instanceof ItemAxe) {
+				return "axe";
+			}
+			if (item instanceof ItemPickaxe) {
+				return "pickaxe";
+			}
+			if (item instanceof ItemSpade) {
+				return "shovel";
+			}
+			if (item instanceof ItemHoe) {
+				return "hoe";
+			}
+			if (item instanceof ItemShears) {
+				return "shears";
+			}
+			if (item instanceof ItemTool) {
+				return "tool";
+			}
+			return "";
+		}
+
+		public static String isValidEquipmentSlot(String input) {
+			if (!input.isEmpty() && validEquipmentTypes.contains(input)) {
+				return input;
+			}
+			return "";
+		}
+
+		public static String isValidArms(String input) {
+			if (!input.isEmpty() && validArmsTypes.contains(input)) {
+				return input;
+			}
+			return "";
+		}
+
+		public static String isValidTools(String input) {
+			if (!input.isEmpty() && validToolTypes.contains(input)) {
+				return input;
+			}
+			return "";
+		}
+
+		public static String isValidArmor(String input) {
+			if (!input.isEmpty() && validArmorTypes.contains(input)) {
+				return input;
+			}
+			return "";
+		}
+
+		public static String isValidHand(String input) {
+			if (!input.isEmpty() && validHandTypes.contains(input)) {
+				return input;
+			}
+			return "";
+		}
+
+		public String getEquipmentSlot() {
+			return slotType;
+		}
+
+		public String getEquipmentType() {
+			return equipmentType;
+		}
+
+		public double getEquipmentWeight() {
+			return equipmentWeight;
 		}
 	}
 
@@ -425,91 +707,105 @@ public class ConfigHelper {
 			final String[] checkArgs = configEntry.split(";", 2);
 			final String entry = StringUtils.getStringFromArray(checkArgs, 0);
 			if (!entry.isEmpty()) {
-				final String[] configArgs = StringUtils.getStringFromArray(checkArgs, 1).split(";", 2);
+				final String configArgs = StringUtils.getStringFromArray(checkArgs, 1);//.split(";", 2);
 				final boolean existsInOreDict = OreDictionaryCompat.existsInOreDictionary(entry);
 				if (existsInOreDict) {
-					objectType = EntryType.OREDICTIONARY;
-					modID = "oreDict";
-					objectID = entry;
-					String leftoverArgs = StringUtils.getStringFromArray(configArgs, 0);
-					if (!leftoverArgs.isEmpty()) {
-						objectArgs = leftoverArgs.split(";");
-					}
+					this.configureOreDictEntry(entry, configArgs);
 				} else if (EntityList.isRegistered(new ResourceLocation(entry))) {
-					objectType = EntryType.ENTITY;
-					if (entry.contains(":")) {
-						final String[] entryArgs = entry.split(":");
-						final String mod = StringUtils.getStringFromArray(entryArgs, 0);
-						final String entity = StringUtils.getStringFromArray(entryArgs, 1);
-						if (!mod.isEmpty()) {
-							modID = mod;
-						}
-						if (!entity.isEmpty()) {
-							objectID = entity;
-						}
-					} else {
-						objectID = entry;
-					}
-					String leftoverArgs = StringUtils.getStringFromArray(configArgs, 0);
-					if (!leftoverArgs.isEmpty()) {
-						objectArgs = leftoverArgs.split(";");
-					}
+					this.configureEntityEntry(entry, configArgs);
 				} else if (entry.matches(itemIDRegex)) {
-					objectType = EntryType.NORMAL;
-					final String[] itemArgs = entry.split(":");
-					final String mod = StringUtils.getStringFromArray(itemArgs, 0);
-					final String item = StringUtils.getStringFromArray(itemArgs, 1);
-					if (!mod.isEmpty()) {
-						modID = mod;
-					}
-					if (!item.isEmpty()) {
-						objectID = item;
-					}
-					if (mod.equalsIgnoreCase("minecraft") && item.equalsIgnoreCase("potion")) {
-						String leftoverArgs = StringUtils.getStringFromArray(configArgs, 0);
-						if (!leftoverArgs.isEmpty()) {
-							objectArgs = leftoverArgs.split(";");
+					this.configureNormalEntry(entry, configArgs);
+				} else if (entry.startsWith("!mat:") && !entry.replaceFirst("!mat:", "").isEmpty()) {
+					this.configureMaterialEntry(entry.replaceFirst("!mat:", "").toLowerCase(), configArgs);
+				} else {
+					this.configureUnknownEntry(entry, configArgs);
+				}
+			}
+		}
+
+		protected void configureOreDictEntry(String entry, String configArgs) {
+			objectType = EntryType.OREDICTIONARY;
+			modID = "oreDict";
+			objectID = entry;
+			if (!configArgs.isEmpty()) {
+				objectArgs = configArgs.split(";");
+			}
+		}
+
+		protected void configureEntityEntry(String entry, String configArgs) {
+			objectType = EntryType.ENTITY;
+			if (entry.contains(":")) {
+				final String[] entryArgs = entry.split(":");
+				final String mod = StringUtils.getStringFromArray(entryArgs, 0);
+				final String entity = StringUtils.getStringFromArray(entryArgs, 1);
+				if (!mod.isEmpty()) {
+					modID = mod;
+				}
+				if (!entity.isEmpty()) {
+					objectID = entity;
+				}
+			} else {
+				objectID = entry;
+			}
+			if (!configArgs.isEmpty()) {
+				objectArgs = configArgs.split(";");
+			}
+		}
+
+		protected void configureMaterialEntry(String entry, String configArgs) {
+			objectType = EntryType.MATERIAL;
+			modID = "ObjectMaterial";
+			objectID = entry;
+			if (!configArgs.isEmpty()) {
+				objectArgs = configArgs.split(";");
+			}
+		}
+
+		protected void configureNormalEntry(String entry, String configArgs) {
+			objectType = EntryType.NORMAL;
+			final String[] itemArgs = entry.split(":");
+			final String mod = StringUtils.getStringFromArray(itemArgs, 0);
+			final String item = StringUtils.getStringFromArray(itemArgs, 1);
+			if (!mod.isEmpty()) {
+				modID = mod;
+			}
+			if (!item.isEmpty()) {
+				objectID = item;
+			}
+			if (mod.equalsIgnoreCase("minecraft") && item.equalsIgnoreCase("potion")) {
+				objectType = EntryType.POTION;
+				if (!configArgs.isEmpty()) {
+					objectArgs = configArgs.split(";");
+				}
+			} else {
+				final String[] args = configArgs.split(";", 2);
+				final String Meta = StringUtils.getStringFromArray(args, 0);
+				if (!Meta.isEmpty()) {
+					int index = 1;
+					if (Meta.contentEquals("*")) {
+					} else if (Meta.matches("([0-9]{1,})")) {
+						try {
+							meta = Math.min(Math.max(Integer.parseInt(Meta), 0), OreDictionaryCompat.wildcard);
+						} catch (Exception e) {
+							e.printStackTrace();
 						}
 					} else {
-						final String Meta = StringUtils.getStringFromArray(configArgs, 0);
-						if (Meta.contentEquals("*")) {
-
-						} else if (Meta.matches("([0-9]{1,})")) {
-							try {
-								final int wildcard = OreDictionaryCompat.wildcard;
-								meta = Integer.parseInt(Meta);
-								if (meta > wildcard) {
-									meta = wildcard;
-								}
-								if (meta < 0) {
-									meta = wildcard;
-								}
-							} catch (Exception e) {
-								e.printStackTrace();
-							}
-						}
-						String leftoverArgs = StringUtils.getStringFromArray(configArgs, 1);
-						if (!leftoverArgs.isEmpty()) {
-							objectArgs = leftoverArgs.split(";");
-						}
+						index = 0;
 					}
-				} else if (entry.startsWith("material") && !entry.replaceFirst("material", "").isEmpty()) {
-					objectType = EntryType.MATERIAL;
-					modID = "ObjectMaterial";
-					objectID = entry.replaceFirst("material", "");
-					String leftoverArgs = StringUtils.getStringFromArray(configArgs, 0);
-					if (!leftoverArgs.isEmpty()) {
-						objectArgs = leftoverArgs.split(";");
-					}
-				} else {
-					objectType = EntryType.UNKNOWN;
-					modID = "unknown";
-					objectID = entry;
-					String leftoverArgs = StringUtils.getStringFromArray(configArgs, 0);
+					String leftoverArgs = StringUtils.getStringFromArray(args, index);
 					if (!leftoverArgs.isEmpty()) {
 						objectArgs = leftoverArgs.split(";");
 					}
 				}
+			}
+		}
+
+		protected void configureUnknownEntry(String entry, String configArgs) {
+			objectType = EntryType.UNKNOWN;
+			modID = "unknown";
+			objectID = entry;
+			if (!configArgs.isEmpty()) {
+				objectArgs = configArgs.split(";");
 			}
 		}
 
@@ -518,98 +814,76 @@ public class ConfigHelper {
 				return false;
 			}
 			final EntryType type = this.getObjectType();
-			if (type.equals(EntryType.OREDICTIONARY)) {
-				for (final String oreDictionary : OreDictionaryCompat.getOreNames(stack)) {
-					if (oreDictionary.equalsIgnoreCase(objectID)) {
-						return true;
-					}
-				}
-				return false;
-			} else if (type.equals(EntryType.MATERIAL)) {
-				if (stack.getItem() instanceof ItemArmor) {
-					ItemArmor armor = (ItemArmor) stack.getItem();
-					ArmorMaterial material = armor.getArmorMaterial();
-					return material.toString().equalsIgnoreCase(objectID);
-				} else if (stack.getItem() instanceof ItemTool) {
-					ItemTool tool = (ItemTool) stack.getItem();
-					return tool.getToolMaterialName().equalsIgnoreCase(objectID);
-				} else if (stack.getItem() instanceof ItemSword) {
-					ItemSword sword = (ItemSword) stack.getItem();
-					return sword.getToolMaterialName().equalsIgnoreCase(objectID);
-				} else if (stack.getItem() instanceof ItemHoe) {
-					ItemHoe sword = (ItemHoe) stack.getItem();
-					return sword.getMaterialName().equalsIgnoreCase(objectID);
-				}
-				return false;
-			} else {
-				String mod = stack.getItem().getRegistryName().getNamespace();
-				String item = stack.getItem().getRegistryName().getPath();
-				if (modID.contentEquals("*") || modID.contentEquals(mod)) {
-					boolean metaMatches = (meta == OreDictionaryCompat.wildcard) || (stack.getMetadata() == meta);
-					if (objectID.contentEquals(item) && metaMatches) {
-						return true;
-					}
-					String objectEntry = objectID.replace("*", "");
-					final boolean startWildcard = objectID.startsWith("*");
-					final boolean endWildcard = objectID.endsWith("*");
-					if (startWildcard && endWildcard) {
-						if (item.contains(objectEntry) && metaMatches) {
-							return true;
-						}
-					} else if (endWildcard) {
-						if (item.startsWith(objectEntry) && metaMatches) {
-							return true;
-						}
-					} else if (startWildcard) {
-						if (item.endsWith(objectEntry) && metaMatches) {
-							return true;
-						}
-					} else {
-					}
-				}
-				return false;
+			switch (type) {
+			case OREDICTIONARY:
+				return this.doesOreDictMatch(stack);
+			case MATERIAL:
+				return this.doesMaterialMatch(stack);
+			case POTION:
+				return this.doesPotionMatch(stack);
+			default:
+				return this.doesItemMatch(stack);
 			}
 		}
 
+		protected boolean doesPotionMatch(@Nonnull ItemStack stack) {
+			if (this.doesItemMatch(stack)) {
+				return true;
+			}
+			return false;
+		}
+
+		protected boolean doesItemMatch(@Nonnull ItemStack stack) {
+			String mod = stack.getItem().getRegistryName().getNamespace();
+			String item = stack.getItem().getRegistryName().getPath();
+			if (modID.contentEquals("*") || modID.contentEquals(mod)) {
+				boolean metaMatches = (meta == OreDictionaryCompat.wildcard) || (stack.getMetadata() == meta);
+				if (objectID.contentEquals(item) && metaMatches) {
+					return true;
+				}
+				String objectEntry = objectID.replace("*", "");
+				final boolean startWildcard = objectID.startsWith("*");
+				final boolean endWildcard = objectID.endsWith("*");
+				if (startWildcard && endWildcard) {
+					if (item.contains(objectEntry) && metaMatches) {
+						return true;
+					}
+				} else if (endWildcard) {
+					if (item.startsWith(objectEntry) && metaMatches) {
+						return true;
+					}
+				} else if (startWildcard) {
+					if (item.endsWith(objectEntry) && metaMatches) {
+						return true;
+					}
+				}
+			}
+			return false;
+		}
+
+		protected boolean doesOreDictMatch(@Nonnull ItemStack stack) {
+			for (final String oreDictionary : OreDictionaryCompat.getOreNames(stack)) {
+				if (oreDictionary.equalsIgnoreCase(objectID)) {
+					return true;
+				}
+			}
+			return false;
+		}
+
+		protected boolean doesMaterialMatch(@Nonnull ItemStack stack) {
+			String[] checkForType = objectID.split(":");
+			String mat = StringUtils.getStringFromArray(checkForType, 0);
+			String ItemMaterial = ConfigHelper.ArmorEntry.getItemMaterial(stack).toLowerCase();
+			return !ItemMaterial.isEmpty() && mat.equalsIgnoreCase(ItemMaterial);
+		}
+
 		public boolean doesBlockMatchEntry(@Nonnull IBlockState state) {
-			//			if ((world == null) || (state == null) || (pos == null) || state.getBlock().isAir(state, world, pos))
 			if ((state == null) || this.isEmpty()) {
 				return false;
 			}
 			final ItemStack blockStack = new ItemStack(state.getBlock(), 1, state.getBlock().getMetaFromState(state));
 			return this.doesItemMatchEntry(blockStack);
-			//			if (modID.contentEquals("oreDict")) {
-			//				for (final String oreDictionary : OreTrackingHelper.getOreNames(blockStack)) {
-			//					if (oreDictionary.equalsIgnoreCase(objectID))
-			//						return true;
-			//				}
-			//				return false;
-			//			} else {
-			//				String mod = state.getBlock().getRegistryName().getNamespace();
-			//				String block = state.getBlock().getRegistryName().getPath();
-			//				if (modID.contentEquals("*") || modID.contentEquals(mod)) {
-			//					boolean metaMatches = (meta == wildcard) || (state.getBlock().getMetaFromState(state) == meta);
-			//					if (objectID.contentEquals(block) && metaMatches)
-			//						return true;
-			//					String objectEntry = objectID.replace("*", "");
-			//					final boolean startWildcard = objectID.startsWith("*");
-			//					final boolean endWildcard = objectID.endsWith("*");
-			//					if (startWildcard && endWildcard) {
-			//						if (block.contains(objectEntry) && metaMatches)
-			//							return true;
-			//					} else if (endWildcard) {
-			//						if (block.startsWith(objectEntry) && metaMatches)
-			//							return true;
-			//					} else if (startWildcard) {
-			//						if (block.endsWith(objectEntry) && metaMatches)
-			//							return true;
-			//					} else {
-			//					}
-			//				}
-			//			}
-			//			return false;
 		}
-
 	}
 
 	public enum EntryType {

@@ -4,6 +4,7 @@ import net.minecraftforge.common.config.Config;
 import net.minecraftforge.common.config.Config.LangKey;
 import net.minecraftforge.common.config.Config.Name;
 import xzeroair.trinkets.util.Reference;
+import xzeroair.trinkets.util.config.race.RaceSizeConfig;
 
 public class FaelisConfig {
 	private final String name = "faelis";
@@ -53,15 +54,15 @@ public class FaelisConfig {
 			"minecraft:chainmail_chestplate;*;0.09",
 			"minecraft:chainmail_leggings;*;0.075",
 			"minecraft:chainmail_boots;*;0.025",
-			"materialIron;head;0.025",
-			"materialIron;chest;0.15",
-			"materialIron;legs;0.075",
-			"materialIron;feet;0.05",
+			"Iron;head;0.025",
+			"Iron;chest;0.15",
+			"Iron;legs;0.075",
+			"Iron;feet;0.05",
 			"minecraft:golden_helmet;*;0.04",
 			"minecraft:golden_chestplate;*;0.2",
 			"minecraft:golden_leggings;*;0.1",
 			"minecraft:golden_boots;*;0.06",
-			"materialDiamond;0.075",
+			"Diamond;0.075",
 	};
 
 	@Config.Comment("Buffs when drinking milk")
@@ -88,6 +89,10 @@ public class FaelisConfig {
 		}
 
 	}
+
+	@Name("Size")
+	@LangKey(Reference.MODID + ".config.race.size")
+	public final RaceSizeConfig size = new RaceSizeConfig(85, 85);
 
 	@Config.Comment({ "For More Information on Attributes", "https://minecraft.gamepedia.com/Attribute" })
 	@Name("Attributes")

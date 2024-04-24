@@ -72,12 +72,17 @@ public class ElementalAttributes {
 		for (Element subEle : this.getSubElements().values()) {
 			subs.setString(subEle.getID() + "", subEle.getRegistryName().toString());
 		}
-		tag.setTag("sub", subs);
+		if (!subs.isEmpty()) {
+			tag.setTag("sub", subs);
+		}
 		compound.setTag("Elements", tag);
 		return compound;
 	}
 
 	public void loadFromNBT(NBTTagCompound compound) {
+		// Is run when an Item with ElementalAttributes is Picked up or placed or equipped or whatever else
+		// Forgot I put an ElementalAttributes in the TrinketsProperties
+
 		if (compound.hasKey("Elements")) {
 			final NBTTagCompound tag = compound.getCompoundTag("Elements");
 			if (tag.hasKey("primary")) {
@@ -96,7 +101,5 @@ public class ElementalAttributes {
 
 		}
 	}
-
-	//TODO Finish this
 
 }

@@ -56,6 +56,9 @@ public class TrinketContainerHandler extends ItemStackHandler implements ITrinke
 
 	@Override
 	public boolean isItemValidForSlot(int slot, ItemStack stack, EntityLivingBase player) {
+		if (!TrinketsConfig.SERVER.GUI.guiEnabled) {
+			return false;
+		}
 		if ((stack == null) || stack.isEmpty() || !((stack.getItem() instanceof IAccessoryInterface))) {
 			return false;
 		}
@@ -64,7 +67,13 @@ public class TrinketContainerHandler extends ItemStackHandler implements ITrinke
 			return trinket.canEquipAccessory(stack, player);
 		} else if (TrinketsConfig.compat.baubles && Trinkets.Baubles && (stack.getItem() instanceof IBauble)) {
 			final IBauble bauble = stack.getCapability(BaublesCapabilities.CAPABILITY_ITEM_BAUBLE, null);
-			return true;//bauble.canEquip(stack, player);// && bauble.getBaubleType(stack).hasSlot(slot);
+			boolean valid = true;
+			try {
+				valid = bauble.canEquip(stack, player);
+			} catch (Exception e) {
+				return false;
+			}
+			return valid;//bauble.canEquip(stack, player);// && bauble.getBaubleType(stack).hasSlot(slot);
 		} else {
 			return false;
 		}

@@ -21,6 +21,7 @@ import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
 import xzeroair.trinkets.capabilities.Capabilities;
 import xzeroair.trinkets.capabilities.CapabilitiesHandler;
+import xzeroair.trinkets.commands.CommandMain;
 import xzeroair.trinkets.init.ModBlocks;
 import xzeroair.trinkets.init.ModItems;
 import xzeroair.trinkets.network.NetworkHandler;
@@ -94,20 +95,6 @@ public class Trinkets {
 		config = new Configuration(new File(directory.getPath(), Reference.configPath + ".cfg"));
 		TrinketsConfig.readConfig();
 
-		//		ConfigHelper.TrinketConfigStorage.init();
-		if (TrinketsConfig.SERVER.misc.retrieveVIP && (gotVIPs != true)) {
-			// TODO Remove this from the Loading Phase and do a Server Side Check, send info to the Client?
-			log.info("Trinkets and Baubles: Generating VIP List");
-			try {
-				long startTime = System.nanoTime();
-				VIPHandler.popVIPList();
-				long endTime = System.nanoTime() - startTime;
-				log.info("Trinkets and Baubles: Finished Gathering VIP List, Took " + (endTime / 1000000L) + "ms");
-			} catch (final Exception e) {
-				e.printStackTrace();
-			}
-			gotVIPs = true;
-		}
 		Baubles = Loader.isModLoaded("baubles");
 		ArtemisLib = Loader.isModLoaded("artemislib");
 		ToughAsNails = Loader.isModLoaded("toughasnails");
@@ -168,7 +155,18 @@ public class Trinkets {
 
 	@EventHandler
 	public void serverStarting(FMLServerStartingEvent event) {
-		//		event.registerServerCommand(new CommandMain());
+		if (TrinketsConfig.SERVER.misc.retrieveVIP) {
+			log.info("Trinkets and Baubles: Generating VIP List");
+			try {
+				long startTime = System.nanoTime();
+				VIPHandler.instance.popVIPList();
+				long endTime = System.nanoTime() - startTime;
+				log.info("Trinkets and Baubles: Finished Gathering VIP List, Took " + (endTime / 1000000L) + "ms");
+			} catch (final Exception e) {
+				e.printStackTrace();
+			}
+		}
+		event.registerServerCommand(new CommandMain());
 	}
 
 	//	static {

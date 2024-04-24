@@ -1,11 +1,15 @@
 package xzeroair.trinkets.capabilities.TileEntityCap;
 
 import java.util.List;
+import java.util.Random;
 
 import net.minecraft.block.Block;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.SoundEvents;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -50,67 +54,66 @@ public class TileEntityProperties extends CapabilityBase<TileEntityProperties, T
 
 	@Override
 	public void onUpdate() {
-		if (hasEssence) {
+		if (this.hasEssence()) {
 			this.updateEssence();
+		} else {
+			object.getWorld().setBlockToAir(object.getPos());
 		}
 	}
 
 	private void updateEssence() {
 		final World world = object.getWorld();
 		final BlockPos tePos = object.getPos();
-		if (world == null) {
+		if ((world == null) || world.isRemote) {
 			return;
 		}
 
-		if (this.hasEssence()) {
-			if ((this.getEssence() > 0)) {
-				final int teEssence = this.getEssence();
-				final BlockPos pos1 = object.getPos().add(-10, -10, -10);
-				final BlockPos pos2 = object.getPos().add(10, 10, 10);
+		final int teEssence = this.getEssence();
+		final double range = 5.0;
+		final double rangeY = 2.0;
+		final BlockPos pos1 = object.getPos().add(-range, -rangeY, -range);
+		final BlockPos pos2 = object.getPos().add(range, rangeY, range);
 
-				final boolean skip = BlockHelperUtil.isBlockNearby(world, new AxisAlignedBB(pos1, pos2), (state, pos) -> {
-					final Block block = state.getBlock();
-					final TileEntity te = world.getTileEntity(pos);
-					final boolean isSelf = tePos.equals(pos);
-					if ((te == null) || isSelf || (te == object)) {
-						return false;
-					}
-					return Capabilities.getTEProperties(te, false, (prop, matches) -> prop.hasEssence());
-				});
-				if (skip) {
-					return;
-				}
-				final List<EntityLivingBase> entities = world.getEntitiesWithinAABB(EntityLivingBase.class, new AxisAlignedBB(object.getPos()).grow(4));
-				if (!entities.isEmpty()) {
-					for (final EntityLivingBase e : entities) {
-						Capabilities.getMagicStats(
-								e, prop -> {
-									if (e.isSneaking()) {
-										final Counter counter = this.getTickHandler().getCounter("absorb.cooldown", TrinketsConfig.SERVER.mana.essence_cooldown, false, true, true, false);
-										if (counter.Tick()) {
-											final double currentBonus = prop.getBonusMana();
-											double addedAmount = 1;
-											prop.setBonusMana(currentBonus + addedAmount);
-											this.setEssence(teEssence - 1);
-										}
-									}
+		final boolean skip = BlockHelperUtil.isBlockNearby(world, new AxisAlignedBB(pos1, pos2), (state, pos) -> {
+			final Block block = state.getBlock();
+			final TileEntity te = world.getTileEntity(pos);
+			final boolean isSelf = tePos.equals(pos);
+			if ((te == null) || isSelf || (te == object)) {
+				return false;
+			}
+			return Capabilities.getTEProperties(te, false, (prop, matches) -> prop.hasEssence());
+		});
+		if (skip) {
+			return;
+		}
+		final List<EntityLivingBase> entities = world.getEntitiesWithinAABB(EntityLivingBase.class, new AxisAlignedBB(object.getPos()).grow(4));
+		if (!entities.isEmpty()) {
+			for (final EntityLivingBase e : entities) {
+				Capabilities.getMagicStats(
+						e, prop -> {
+							if (e.isSneaking()) {
+								final Counter counter = this.getTickHandler().getCounter("absorb.cooldown", TrinketsConfig.SERVER.mana.essence_cooldown, false, true, true, false);
+								if (counter.Tick()) {
+									final double currentBonus = prop.getBonusMana();
+									double addedAmount = 1;
+									prop.setBonusMana(currentBonus + addedAmount);
+									this.setEssence(teEssence - 1);
+									Random rand = Reference.random;
+									world.playSound((EntityPlayer) null, tePos, SoundEvents.ENTITY_ILLAGER_CAST_SPELL, SoundCategory.BLOCKS, 0.4F, (rand.nextFloat() * 0.6F) + 0.4F);
 								}
-						);
-					}
-				}
-				if (teEssence != this.getEssence()) {
-					this.saveToNBT(this.getTag());
-					object.markDirty();
-				}
+							}
+						}
+				);
 			}
-			if (this.getEssence() <= 0) {
-				object.getWorld().setBlockToAir(object.getPos());
-			}
+		}
+		if (teEssence != this.getEssence()) {
+			this.saveToNBT(this.getTag());
+			object.markDirty();
 		}
 	}
 
 	public boolean hasEssence() {
-		return hasEssence;
+		return hasEssence && (this.getEssence() > 0);
 	}
 
 	public int getEssence() {

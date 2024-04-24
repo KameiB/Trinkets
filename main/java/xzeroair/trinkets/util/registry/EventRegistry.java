@@ -54,7 +54,9 @@ public class EventRegistry {
 		if (Trinkets.Baubles && !TrinketsConfig.compat.xatItemsInTrinketGuiOnly) {
 			MinecraftForge.EVENT_BUS.register(new BaubleEventHandler());
 		}
-		MinecraftForge.EVENT_BUS.register(new TrinketEventHandler());
+		if (TrinketsConfig.SERVER.GUI.guiEnabled) {
+			MinecraftForge.EVENT_BUS.register(new TrinketEventHandler());
+		}
 	}
 
 	public static void postInit() {

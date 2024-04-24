@@ -13,7 +13,7 @@ public class TileEntityMoonRose extends TileEntity implements ITickable {
 
 	@Override
 	public void update() {
-		if (world != null) {
+		if ((world != null) && !world.isRemote) {
 			Capabilities.getTEProperties(this, TileEntityProperties::onUpdate);
 		}
 	}

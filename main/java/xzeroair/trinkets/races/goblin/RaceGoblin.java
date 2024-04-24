@@ -192,9 +192,9 @@ public class RaceGoblin extends EntityRacePropertiesHandler {
 		if ((entity == Minecraft.getMinecraft().player) && (screen != null) && !((screen instanceof GuiChat) || (screen instanceof GuiEntityProperties) || (screen instanceof ManaHud))) {
 			return;
 		}
-		if ((this.isTransforming() || this.isTransformed()) && !properties.isNormalSize()) {
-			final double hScale = properties.getHeightValue() * 0.01D;
-			final double wScale = properties.getWidthValue() * 0.01D;
+		if ((this.isTransforming() || this.isTransformed()) && !this.getEntityProperties().isNormalSize()) {
+			final double hScale = this.getEntityProperties().getHeightValue() * 0.01D;
+			final double wScale = this.getEntityProperties().getWidthValue() * 0.01D;
 			final double xLoc = (x / wScale) - x;
 			final double yLoc = (y / hScale) - y;
 			final double zLoc = (z / wScale) - z;

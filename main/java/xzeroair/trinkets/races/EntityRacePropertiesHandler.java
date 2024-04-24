@@ -108,6 +108,18 @@ public abstract class EntityRacePropertiesHandler implements IRaceHandler {
 		return this;
 	}
 
+	protected EntityProperties getEntityProperties() {
+		if (properties != null) {
+			return properties;
+		} else {
+			EntityProperties tmp = Capabilities.getEntityProperties(entity);
+			if (tmp == null) {
+				tmp = new EntityProperties(entity);
+			}
+			return tmp;
+		}
+	}
+
 	public EntityRacePropertiesHandler setFirstUpdate(boolean firstUpdate) {
 		this.firstUpdate = firstUpdate;
 		return this;
@@ -122,28 +134,21 @@ public abstract class EntityRacePropertiesHandler implements IRaceHandler {
 		return race;
 	}
 
-	//	public ElementalAttributes getElements() {
+	//	public ElementalAttributes getElementalProperties() {
 	//		return elements;
 	//	}
 
 	public void addAbility(IAbilityInterface ability) {
-		if (properties != null) {
-			properties.getAbilityHandler().registerRaceAbility(this.getRace().getRegistryName().toString(), ability);
-		}
+		this.getEntityProperties().getAbilityHandler().registerRaceAbility(this.getRace().getRegistryName().toString(), ability);
 	}
 
 	@Nullable
 	public IAbilityInterface getAbility(String ability) {
-		if (properties != null) {
-			return properties.getAbilityHandler().getAbility(ability);
-		}
-		return null;
+		return this.getEntityProperties().getAbilityHandler().getAbility(ability);
 	}
 
 	public void removeAbility(String ability) {
-		if (properties != null) {
-			properties.getAbilityHandler().removeAbility(ability);
-		}
+		this.getEntityProperties().getAbilityHandler().removeAbility(ability);
 	}
 
 	/**
@@ -153,12 +158,9 @@ public abstract class EntityRacePropertiesHandler implements IRaceHandler {
 		firstTransformUpdate = true;
 		healthBeforeTransformation = entity.getHealth();
 		maxHealthBeforeTranformation = entity.getMaxHealth();
-		if (properties == null) {
-			properties = Capabilities.getEntityProperties(entity);
-		}
 		this.startTransformation();
 		try {
-			this.loadNBTData(properties.getTag());
+			this.loadNBTData(this.getEntityProperties().getTag());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -174,7 +176,7 @@ public abstract class EntityRacePropertiesHandler implements IRaceHandler {
 			artemis.removeModifiers();
 		}
 		try {
-			this.savedNBTData(properties.getTag());
+			this.savedNBTData(this.getEntityProperties().getTag());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -233,12 +235,12 @@ public abstract class EntityRacePropertiesHandler implements IRaceHandler {
 	}
 
 	public boolean isTransforming() {
-		return (properties.getHeightValue() != this.getTargetHeight()) || (properties.getWidthValue() != this.getTargetWidth());
+		return (this.getEntityProperties().getHeightValue() != this.getTargetHeight()) || (this.getEntityProperties().getWidthValue() != this.getTargetWidth());
 		//false;//this.getSize() != this.getTargetSize();
 	}
 
 	public boolean isTransformed() {
-		return (properties.getHeightValue() == this.getTargetHeight()) && (properties.getWidthValue() == this.getTargetWidth());
+		return (this.getEntityProperties().getHeightValue() == this.getTargetHeight()) && (this.getEntityProperties().getWidthValue() == this.getTargetWidth());
 	}
 
 	public double TransformationProgress() {
@@ -252,8 +254,8 @@ public abstract class EntityRacePropertiesHandler implements IRaceHandler {
 	protected void updateSize() {
 		//		if (this.isTransforming()) {
 		if ((!this.isTransformed() && this.isTransforming()) || (this.TransformationProgress() < 1D)) {
-			final int height = properties.getHeightValue();
-			final int width = properties.getWidthValue();
+			final int height = this.getEntityProperties().getHeightValue();
+			final int width = this.getEntityProperties().getWidthValue();
 			final BiFunction<Integer, Integer, Integer> increment = (x, y) -> {
 				if (x < y) {
 					return x + 1;
@@ -264,12 +266,12 @@ public abstract class EntityRacePropertiesHandler implements IRaceHandler {
 				}
 			};
 			final int h = increment.apply(height, this.getTargetHeight());
-			properties.setHeightValue(h);
+			this.getEntityProperties().setHeightValue(h);
 			final int w = increment.apply(width, this.getTargetWidth());
-			properties.setWidthValue(w);
+			this.getEntityProperties().setWidthValue(w);
 			//			System.out.println(h + "|" + w);
-			int previousRaceTargetHeight = properties.getPreviousRace().getRaceHeight();
-			int previousRaceTargetWidth = properties.getPreviousRace().getRaceWidth();
+			int previousRaceTargetHeight = this.getEntityProperties().getPreviousRace().getRaceHeight();
+			int previousRaceTargetWidth = this.getEntityProperties().getPreviousRace().getRaceWidth();
 			double heightProgress = this.transformProgress(previousRaceTargetHeight, this.getTargetHeight(), height);
 			double widthProgress = this.transformProgress(previousRaceTargetWidth, this.getTargetWidth(), width);
 			double finalValue = this.isTransformed() ? 1D : StringUtils.getAccurateDouble(heightProgress * widthProgress);
@@ -303,57 +305,52 @@ public abstract class EntityRacePropertiesHandler implements IRaceHandler {
 	}
 
 	protected void eyeHeightHandler() {
-		if (entity instanceof EntityPlayer) {
-			if (!TrinketsConfig.CLIENT.cameraHeight) {
-				return;
-			}
-			final EntityPlayer player = (EntityPlayer) entity;
-			final float defaultEyeHeight = player.getDefaultEyeHeight();
-			if (this.isTransforming() || this.isTransformed()) {
-				// 165 when sneaking
-				// 162 eyeheight, sneaking is -0.8
-				float f = (float) StringUtils.getAccurateDouble(((this.getHeight() * 0.85F)));
+		if (!(entity instanceof EntityPlayer)) {
+			return;
+		}
 
-				if (player.isPlayerSleeping()) {
-					f = 0.2F;
-				} else if (!player.isSneaking()) {
-					if (player.isElytraFlying()) {
-						f *= 0.2F;//0.4F;
-					}
-				} else {
-					f -= f / 20;//0.08F;
-				}
-				//			f -= 0.05F;
+		EntityPlayer player = (EntityPlayer) entity;
 
-				//			if (player.isPlayerSleeping()) {
-				//				f = 0.2F;
-				//			} else if (!player.isSneaking() && (player.height != f)) {
-				//				if (player.isElytraFlying() || (player.height == 0.6F)) {
-				//					f = 0.4F;
-				//				}
-				//			} else {
-				//				f -= 0.08F;
-				//			}
-				if (player.isRiding()) {
-					final Entity mount = player.getRidingEntity();
-					if (mount != null) {
-						final float mountHeight = mount.height;
-						final double mountOffset = mount.getMountedYOffset();
-						final double t = mountHeight - mountOffset;
-						//				if (f < mountHeight) {
-						//					f = mountHeight;
-						//				}
-						//					f += t;
-						f = MathHelper.clamp(f, mountHeight, f);
-					}
+		if (!TrinketsConfig.CLIENT.cameraHeight) {
+			this.resetEyeHeight(player);
+			return;
+		}
+		if (this.isTransforming() || this.isTransformed()) {
+			// 165 when sneaking
+			// 162 eyeheight, sneaking is -0.8
+			float f = (float) StringUtils.getAccurateDouble(((this.getHeight() * 0.85F)));
+
+			if (player.isPlayerSleeping()) {
+				f = 0.2F;
+			} else if (!player.isSneaking()) {
+				if (player.isElytraFlying()) {
+					f *= 0.2F;//0.4F;
 				}
-				//			System.out.println(f + "");
-				player.eyeHeight = f;
 			} else {
-				if (player.eyeHeight != defaultEyeHeight) {
-					player.eyeHeight = defaultEyeHeight;
+				f -= f / 20;//0.08F;
+			}
+			if (player.isRiding()) {
+				final Entity mount = player.getRidingEntity();
+				if (mount != null) {
+					final float mountHeight = mount.height;
+					//					final double mountOffset = mount.getMountedYOffset();
+					//					final double t = mountHeight - mountOffset;
+					//					if (f < mountHeight) {
+					//						f = mountHeight;
+					//					}
+					//					f += t;
+					f = MathHelper.clamp(f, mountHeight, f);
 				}
 			}
+			player.eyeHeight = f;
+		} else {
+			this.resetEyeHeight(player);
+		}
+	}
+
+	private void resetEyeHeight(EntityPlayer player) {
+		if (player.eyeHeight != player.getDefaultEyeHeight()) {
+			player.eyeHeight = player.getDefaultEyeHeight();
 		}
 	}
 
@@ -374,12 +371,12 @@ public abstract class EntityRacePropertiesHandler implements IRaceHandler {
 	}
 
 	public float getHeight() {
-		final float TLHeight = (float) (properties.getDefaultHeight() * (properties.getHeightValue() * 0.01));
+		final float TLHeight = (float) (this.getEntityProperties().getDefaultHeight() * (this.getEntityProperties().getHeightValue() * 0.01));
 		return TLHeight;//(float) StringUtils.getAccurateDouble(TLHeight, properties.getDefaultHeight());
 	}
 
 	public float getWidth() {
-		final float TLWidth = (float) (properties.getDefaultWidth() * (properties.getWidthValue() * 0.01));
+		final float TLWidth = (float) (this.getEntityProperties().getDefaultWidth() * (this.getEntityProperties().getWidthValue() * 0.01));
 		return TLWidth;//(float) StringUtils.getAccurateDouble(TLWidth, properties.getDefaultWidth());
 	}
 
@@ -403,7 +400,7 @@ public abstract class EntityRacePropertiesHandler implements IRaceHandler {
 				}
 			}
 			progress = source.progress;
-			//			element = source.element;
+			//			elements = source.elements;
 			//			artemisSupport = source.artemisSupport;
 			showTraits = source.showTraits;
 			traitColor = source.traitColor;
@@ -429,16 +426,16 @@ public abstract class EntityRacePropertiesHandler implements IRaceHandler {
 	public NBTTagCompound savedNBTData(NBTTagCompound compound) {
 		if ((race != null) && !race.isNone()) {
 			final String key = race.getRegistryName().toString();
-			if (!compound.hasKey(key)) {
-				compound.setTag(key, new NBTTagCompound());
+			final NBTTagCompound tag = new NBTTagCompound();
+			tag.setBoolean("trait_shown", showTraits);
+			tag.setString("trait_color", traitColor);
+			tag.setString("trait_color_alt", traitColorAlt);
+			tag.setInteger("trait_variant", traitVariant);
+			tag.setDouble("transformation_progress", progress);
+			//			elements.saveToNBT(tag);
+			if (!tag.isEmpty()) {
+				compound.setTag(key, tag);
 			}
-			NBTTagCompound rTag = compound.getCompoundTag(key);
-			rTag.setBoolean("trait_shown", showTraits);
-			rTag.setString("trait_color", traitColor);
-			rTag.setString("trait_color_alt", traitColorAlt);
-			rTag.setInteger("trait_variant", traitVariant);
-			rTag.setDouble("transformation_progress", progress);
-			//			elements.saveToNBT(rTag);
 		}
 		return compound;
 	}
@@ -464,9 +461,6 @@ public abstract class EntityRacePropertiesHandler implements IRaceHandler {
 				if (rTag.hasKey("transformation_progress")) {
 					progress = rTag.getDouble("transformation_progress");
 				}
-				//				if (rTag.hasKey("element")) {
-				//					element = rTag.getString("element");
-				//				}
 				//				elements.loadFromNBT(rTag);
 			}
 		}
@@ -513,9 +507,9 @@ public abstract class EntityRacePropertiesHandler implements IRaceHandler {
 		if ((entity == Minecraft.getMinecraft().player) && (screen != null) && !((screen instanceof GuiChat) || (screen instanceof GuiEntityProperties) || (screen instanceof ManaHud))) {
 			return;
 		}
-		if ((this.isTransforming() || this.isTransformed()) && !properties.isNormalSize()) {
-			final double hScale = properties.getHeightValue() * 0.01D;
-			final double wScale = properties.getWidthValue() * 0.01D;
+		if ((this.isTransforming() || this.isTransformed()) && !this.getEntityProperties().isNormalSize()) {
+			final double hScale = this.getEntityProperties().getHeightValue() * 0.01D;
+			final double wScale = this.getEntityProperties().getWidthValue() * 0.01D;
 			final double xLoc = (x / wScale) - x;
 			final double yLoc = (y / hScale) - y;
 			final double zLoc = (z / wScale) - z;
@@ -555,9 +549,9 @@ public abstract class EntityRacePropertiesHandler implements IRaceHandler {
 	@Override
 	public <T extends EntityLivingBase> void doRenderLivingSpecialsPre(EntityLivingBase entity, double x, double y, double z, RenderLivingBase<T> renderer, float partialTick) {
 		if (entity instanceof EntityPlayer) {
-			if ((this.isTransforming() || this.isTransformed()) && !properties.isNormalSize()) {
+			if ((this.isTransforming() || this.isTransformed()) && !this.getEntityProperties().isNormalSize()) {
 				GlStateManager.pushMatrix();
-				final float t2 = properties.getDefaultHeight() - (entity.height);
+				final float t2 = this.getEntityProperties().getDefaultHeight() - (entity.height);
 				GlStateManager.translate(0, t2, 0);
 			}
 		}
@@ -569,7 +563,7 @@ public abstract class EntityRacePropertiesHandler implements IRaceHandler {
 	@Override
 	public <T extends EntityLivingBase> void doRenderLivingSpecialsPost(EntityLivingBase entity, double x, double y, double z, RenderLivingBase<T> renderer, float partialTick) {
 		if (entity instanceof EntityPlayer) {
-			if ((this.isTransforming() || this.isTransformed()) && !properties.isNormalSize()) {
+			if ((this.isTransforming() || this.isTransformed()) && !this.getEntityProperties().isNormalSize()) {
 				GlStateManager.popMatrix();
 			}
 		}
@@ -580,10 +574,10 @@ public abstract class EntityRacePropertiesHandler implements IRaceHandler {
 	 */
 	@Override
 	public <T extends EntityLivingBase> void doRenderLivingPre(EntityLivingBase entity, double x, double y, double z, RenderLivingBase<T> renderer, float partialTick) {
-		if ((this.isTransforming() || this.isTransformed()) && !properties.isNormalSize()) {
+		if ((this.isTransforming() || this.isTransformed()) && !this.getEntityProperties().isNormalSize()) {
 			GlStateManager.pushMatrix();
-			final double hScale = properties.getHeightValue() * 0.01D;
-			final double wScale = properties.getWidthValue() * 0.01D;
+			final double hScale = this.getEntityProperties().getHeightValue() * 0.01D;
+			final double wScale = this.getEntityProperties().getWidthValue() * 0.01D;
 			final double xLoc = (x / wScale) - x;
 			final double yLoc = (y / hScale) - y;
 			final double zLoc = (z / wScale) - z;
@@ -617,7 +611,7 @@ public abstract class EntityRacePropertiesHandler implements IRaceHandler {
 	 */
 	@Override
 	public <T extends EntityLivingBase> void doRenderLivingPost(EntityLivingBase entity, double x, double y, double z, RenderLivingBase<T> renderer, float partialTick) {
-		if ((this.isTransforming() || this.isTransformed()) && !properties.isNormalSize()) {
+		if ((this.isTransforming() || this.isTransformed()) && !this.getEntityProperties().isNormalSize()) {
 			GlStateManager.popMatrix();
 		}
 	}

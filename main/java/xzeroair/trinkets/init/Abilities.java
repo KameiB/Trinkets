@@ -11,9 +11,11 @@ public class Abilities {
 	public static final String nightVision 					="night_vision";
 	public static final String creativeFlight				="creative_flight";
 	public static final String fireBreathing				="fire_breathing";
+
 	public static final String fireImmunity					="fire_immunity";
 	public static final String iceImmunity					="ice_immunity";
-	public static final String lightningImmunity					="lightning_immunity";
+	public static final String lightningImmunity			="lightning_immunity";
+
 	public static final String blockDetection				="block_detection";
 	public static final String blockClimbing				="block_climbing";
 	public static final String witherImmunity				="wither_immunity";
@@ -46,6 +48,8 @@ public class Abilities {
 	public static final String survivalThirstImmunity		="thirst_immunity";
 	public static final String survivalParasitesImmunity	="parasites_immunity";
 	public static final String firstAidReflex				="firstaid_reflex";
+//	public static final String LycanitesFearImmunity		="fear_immunity";
+//	public static final String LycanitesInsomniaImmunity	="insomnia_immunity";
 
 //	private static final String name(String id) {
 //		return Reference.MODID + ":" + id;

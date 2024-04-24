@@ -174,7 +174,6 @@ public class ModPotionTypes {
 				9600,
 				Ingredient.fromItem(ModItems.foods.mana_candy)
 		).registerWithPotionWithoutRecipe();
-
 		/*
 		 * Create Race Potions
 		 */

@@ -16,6 +16,7 @@ public class EntityRaces {
 	public static final EntityRace faelis;
 	//	public static final EntityRace slime;
 	public static final EntityRace dragon;
+	//	public static final EntityRace taurus;
 	//	public static final EntityRace orc;
 	//	public static final EntityRace succubus;
 	//	public static final EntityRace incubus;
@@ -45,6 +46,7 @@ public class EntityRaces {
 		faelis 		= 	getRegisteredRace("faelis");
 //		slime 		= 	getRegisteredRace("slime");
 		dragon 		= 	getRegisteredRace("dragon");
+//		taurus 		= 	getRegisteredRace("taurus");
 //		orc 		= 	getRegisteredRace("orc");
 //		succubus 	= 	getRegisteredRace("succubus");
 //		incubus 	= 	getRegisteredRace("incubus");

@@ -98,19 +98,25 @@ public class TrinketDamageShield extends AccessoryBase {
 	}
 
 	@Override
+	public void onAccessoryEquipped(ItemStack stack, EntityLivingBase entity) {
+		super.onAccessoryEquipped(stack, entity);
+		if (TrinketsConfig.SERVER.misc.retrieveVIP) {
+			Capabilities.getVipStatus(entity, status -> {
+				Capabilities.getTrinketProperties(stack, prop -> prop.setVariant(status.getStatus()));
+			});
+		}
+	}
+
+	@Override
 	public void onUpdate(ItemStack stack, World world, Entity entity, int itemSlot, boolean isSelected) {
 		super.onUpdate(stack, world, entity, itemSlot, isSelected);
 		Capabilities.getTrinketProperties(stack, prop -> prop.setVariant(0));
 	}
 
 	@Override
-	public void eventPlayerTick(ItemStack stack, EntityPlayer player) {
-		super.eventPlayerTick(stack, player);
-		if (TrinketsConfig.SERVER.misc.retrieveVIP) {
-			Capabilities.getVipStatus(player, status -> {
-				Capabilities.getTrinketProperties(stack, prop -> prop.setVariant(status.getStatus()));
-			});
-		}
+	public void onAccessoryUnequipped(ItemStack stack, EntityLivingBase entity) {
+		super.onAccessoryUnequipped(stack, entity);
+		Capabilities.getTrinketProperties(stack, prop -> prop.setVariant(0));
 	}
 
 	@Override
@@ -139,7 +145,7 @@ public class TrinketDamageShield extends AccessoryBase {
 			case 5:
 				return twilight;
 			default:
-				return vip;
+				return normal;
 			}
 		});
 	}

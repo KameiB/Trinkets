@@ -30,6 +30,9 @@ xat.tooltip.on=§r(§aOn§r)
 xat.tooltip.off=§r(§cOff§r)
 xat.tooltip.enabled=§r[§aEnabled§r]
 xat.tooltip.disabled=§r[§cDisabled§r]
+xat.tooltip.weight=Weight:
+
+xat..config.race.size=Size Settings
 
 key.xat.category=Trinkets and Baubles
 key.xat.trinket_target.desc=Dragons Eye: Cycle
@@ -248,7 +251,6 @@ item.sea_stone.0.bubbles=§6Infinite oxygen at §r[§3$bubbles:§r]§6 bubbles
 item.sea_stone.0.betterswimming=§2Enhanced Swimming
 item.sea_stone.0.compat.tan=@tanthirst:
 item.sea_stone.0.tanthirst=§6Immunity to Thirst
-item.sea_stone.0.compat.enhancedvisuals=Disables the blur when entering water
 
 item.polarized_stone.0.name=Polarized Stone
 item.polarized_stone.0.tooltip1=@collect:
@@ -278,7 +280,6 @@ item.dragons_eye.0.compat.tan=$typeimmune:
 item.dragons_eye.0.heatimmune=§6Immunity to hyperthermia
 item.dragons_eye.0.coldimmune=§6Immunity to hypothermia
 item.dragons_eye.0.paralysisimmune=§6Immunity to paralysis
-item.dragons_eye.0.compat.enhancedvisuals=
 item.dragons_eye.0.compat.iaf.ice.frostwalker=§6Grants §3Frost Walker
 
 item.poison_stone.0.name=Poison Stone
@@ -630,6 +631,9 @@ xat.config.client.dragons_eye.orefinder.refresh.rate.tooltip=Determines of Often
 xat.config.ender_tiara=Ender Queen's Crown Settings
 xat.config.ender_tiara.tooltip=
 
+xat.config.client.ender_tiara.helmet=Render helmet Slot
+xat.config.client.ender_tiara.helmet.tooltip=
+
 xat.config.server.ender_tiara.waterhurts=Water Hurts
 xat.config.server.ender_tiara.waterhurts.tooltip=If the Player Should Take Damage in water or when exposed to rain
 xat.config.server.ender_tiara.ignoredamage=Chance to Ignore Damage
@@ -845,6 +849,8 @@ xat.config.magic.mana.cap.bonus=Bonus Mana Cap
 xat.config.magic.mana.cap.bonus.tooltip=Cap Bonus Mana Obtained from Mana Crystals and Moon Rose, set to 0 to disable
 xat.config.magic.mana.recovery.list=Recovery Items
 xat.config.magic.mana.recovery.list.tooltip=Items that Recover Mana\n modid:item_name;meta;amount
+xat.config.magic.mana.players_only=Only Players
+xat.config.magic.mana.players_only.tooltip=Only players have Mana
 
 #####################################[Magic Configs End]#####################################
 
