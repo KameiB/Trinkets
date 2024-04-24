@@ -32,7 +32,7 @@ xat.tooltip.enabled=§r[§aEnabled§r]
 xat.tooltip.disabled=§r[§cDisabled§r]
 xat.tooltip.weight=Weight:
 
-xat..config.race.size=Size Settings
+xat.config.race.size=Size Settings
 
 key.xat.category=Trinkets and Baubles
 key.xat.trinket_target.desc=Dragons Eye: Cycle

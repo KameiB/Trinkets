@@ -33,7 +33,7 @@ xat.tooltip.enabled=§r[§aHabilitado§r]
 xat.tooltip.disabled=§r[§cDeshabilitado§r]
 xat.tooltip.weight=Weight:
 
-xat..config.race.size=Size Settings
+xat.config.race.size=Size Settings
 
 key.xat.category=Trinkets and Baubles
 key.xat.trinket_target.desc=Ojo de dragon: Ciclar
